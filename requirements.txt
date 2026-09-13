@@ -2,3 +2,6 @@ Flask
 Werkzeug
 mysql-connector-python
 python-dotenv
+Pillow
+psycopg[binary]
+gunicorn

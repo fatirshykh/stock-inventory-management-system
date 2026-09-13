@@ -1,65 +1,33 @@
 from flask import Flask, request, jsonify, render_template, session, redirect, url_for
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import mysql.connector
 from werkzeug.security import generate_password_hash, check_password_hash
 from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime
-from decimal import Decimal
-from dotenv import load_dotenv
 import os
-import re
-
-# =========================
-# LOAD ENVIRONMENT VARIABLES
-# =========================
-
-load_dotenv()
-
-
-# =========================
-# FLASK APP
-# =========================
+import config
 
 app = Flask(__name__)
 
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+# Secret Key
+app.config["SECRET_KEY"] = config.SECRET_KEY
 
 
 # =========================
-# SUPABASE DATABASE
+# MySQL Connection Function
 # =========================
-
-DATABASE_URL = os.getenv("DATABASE_URL")
 
 
 def get_db_connection():
-    return psycopg2.connect(DATABASE_URL)
+    return mysql.connector.connect(
+        host=config.DB_HOST,
+        user=config.DB_USER,
+        password=config.DB_PASSWORD,
+        database=config.DB_NAME,
+    )
 
 
 # =========================
-# JSON SAFE CONVERTER
-# =========================
-
-
-def make_json_safe(value):
-
-    if isinstance(value, Decimal):
-        return float(value)
-
-    if isinstance(value, datetime):
-        return value.isoformat()
-
-    if isinstance(value, list):
-        return [make_json_safe(item) for item in value]
-
-    if isinstance(value, dict):
-        return {key: make_json_safe(item) for key, item in value.items()}
-
-    return value
-
-
-# =========================
-# GENERATE INVOICE IMAGE
+# Generate Invoice Image
 # =========================
 
 
@@ -72,18 +40,32 @@ def generate_invoice_image(
     final_amount,
     currency="PKR",
 ):
+    # ===============================
+    # CREATE BILLS DIRECTORY
+    # ===============================
 
     bills_folder = os.path.join(app.root_path, "static", "bills")
 
     os.makedirs(bills_folder, exist_ok=True)
 
+    # ===============================
+    # HIGH RESOLUTION SETTINGS
+    # ===============================
+
     width = 1200
+
     margin = 80
 
+    # Calculate invoice height based on number of products
     item_height = 75
+
     base_height = 950
 
     image_height = base_height + (len(items) * item_height)
+
+    # ===============================
+    # CREATE IMAGE
+    # ===============================
 
     image = Image.new("RGB", (width, image_height), "white")
 
@@ -127,10 +109,15 @@ def generate_invoice_image(
     # ===============================
 
     black = (20, 20, 20)
+
     dark_gray = (70, 70, 70)
+
     gray = (110, 110, 110)
+
     light_gray = (235, 235, 235)
+
     border_gray = (215, 215, 215)
+
     red = (239, 68, 68)
 
     # ===============================
@@ -139,6 +126,7 @@ def generate_invoice_image(
 
     center_x = width // 2
 
+    # SIMS
     text = "SIMS"
 
     bbox = draw.textbbox((0, 0), text, font=title_font)
@@ -147,6 +135,7 @@ def generate_invoice_image(
 
     draw.text((center_x - text_width / 2, 60), text, fill=black, font=title_font)
 
+    # Subtitle
     text = "Smart Inventory & Sales Management System"
 
     bbox = draw.textbbox((0, 0), text, font=small_font)
@@ -155,6 +144,7 @@ def generate_invoice_image(
 
     draw.text((center_x - text_width / 2, 135), text, fill=gray, font=small_font)
 
+    # Red line
     draw.rectangle((margin, 185, width - margin, 190), fill=red)
 
     # ===============================
@@ -177,12 +167,14 @@ def generate_invoice_image(
 
     y += 70
 
+    # Date and time
     date_text = datetime.now().strftime("%d %b %Y  |  %I:%M %p")
 
     draw.text((margin, y), f"Date: {date_text}", fill=gray, font=small_font)
 
     y += 45
 
+    # Customer
     draw.text(
         (margin, y), f"Customer: {customer_name}", fill=dark_gray, font=regular_font
     )
@@ -194,16 +186,22 @@ def generate_invoice_image(
     y += 70
 
     table_left = margin
+
     table_right = width - margin
 
     header_height = 60
 
     draw.rectangle((table_left, y, table_right, y + header_height), fill=light_gray)
 
+    # Column positions
     product_x = table_left + 20
+
     sku_x = 560
+
     qty_x = 720
+
     price_x = 820
+
     subtotal_x = 1000
 
     draw.text((product_x, y + 18), "Product", fill=black, font=bold_small_font)
@@ -234,16 +232,21 @@ def generate_invoice_image(
 
         item_subtotal = float(item.get("subtotal", 0))
 
+        # Row border
         draw.line((table_left, y, table_right, y), fill=border_gray, width=2)
 
+        # Product
         draw.text(
             (product_x, y + 22), product_name[:28], fill=dark_gray, font=small_font
         )
 
+        # SKU
         draw.text((sku_x, y + 22), sku[:12], fill=dark_gray, font=small_font)
 
+        # Quantity
         draw.text((qty_x, y + 22), str(quantity), fill=dark_gray, font=small_font)
 
+        # Price
         draw.text(
             (price_x, y + 22),
             f"{currency} {unit_price:,.2f}",
@@ -251,6 +254,7 @@ def generate_invoice_image(
             font=small_font,
         )
 
+        # Subtotal
         draw.text(
             (subtotal_x, y + 22),
             f"{currency} {item_subtotal:,.2f}",
@@ -260,6 +264,7 @@ def generate_invoice_image(
 
         y += item_height
 
+    # Bottom table line
     draw.line((table_left, y, table_right, y), fill=border_gray, width=2)
 
     # ===============================
@@ -270,8 +275,9 @@ def generate_invoice_image(
 
     totals_label_x = 720
 
-    # Subtotal
+    totals_value_x = 1000
 
+    # Subtotal
     draw.text((totals_label_x, y), "Subtotal", fill=dark_gray, font=regular_font)
 
     subtotal_text = f"{currency} {float(subtotal):,.2f}"
@@ -290,7 +296,6 @@ def generate_invoice_image(
     y += 50
 
     # Discount
-
     discount_amount = float(discount)
 
     discount_percentage = (
@@ -319,10 +324,12 @@ def generate_invoice_image(
 
     y += 65
 
+    # Divider
     draw.line((totals_label_x, y, width - margin, y), fill=black, width=3)
 
     y += 30
 
+    # Grand Total
     draw.text((totals_label_x, y), "TOTAL", fill=black, font=total_font)
 
     final_text = f"{currency} {float(final_amount):,.2f}"
@@ -369,14 +376,19 @@ def generate_invoice_image(
 
     invoice_path = os.path.join(bills_folder, invoice_filename)
 
+    # Save at maximum PNG quality
     image.save(invoice_path, "PNG", optimize=False)
+
+    # ===============================
+    # RETURN URL
+    # ===============================
 
     return f"/static/bills/{invoice_filename}"
 
 
-# ============================================================
-# HOME / LOGIN PAGE
-# ============================================================
+# =========================
+# Home / Login Page
+# =========================
 
 
 @app.route("/")
@@ -384,9 +396,9 @@ def home():
     return render_template("login.html")
 
 
-# ============================================================
-# SIGNUP PAGE
-# ============================================================
+# =========================
+# Signup Page
+# =========================
 
 
 @app.route("/signup", methods=["GET"])
@@ -394,9 +406,9 @@ def signup_page():
     return render_template("signup.html")
 
 
-# ============================================================
-# SIGNUP
-# ============================================================
+# =========================
+# Signup
+# =========================
 
 
 @app.route("/signup", methods=["POST"])
@@ -410,6 +422,7 @@ def signup():
     phone = data["phone"]
     password = data["password"]
 
+    # Hash Password
     password = generate_password_hash(password)
 
     db = get_db_connection()
@@ -420,15 +433,8 @@ def signup():
         cursor.execute(
             """
             INSERT INTO users
-            (
-                fullname,
-                username,
-                email,
-                phone,
-                password
-            )
-            VALUES
-            (%s, %s, %s, %s, %s)
+            (fullname, username, email, phone, password)
+            VALUES (%s, %s, %s, %s, %s)
             """,
             (fullname, username, email, phone, password),
         )
@@ -437,7 +443,7 @@ def signup():
 
         return jsonify({"success": True, "message": "Account created successfully."})
 
-    except psycopg2.IntegrityError:
+    except mysql.connector.IntegrityError:
 
         db.rollback()
 
@@ -446,11 +452,11 @@ def signup():
             409,
         )
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
         db.rollback()
 
-        return (jsonify({"success": False, "message": str(error)}), 500)
+        return jsonify({"success": False, "message": str(error)}), 500
 
     finally:
 
@@ -458,9 +464,9 @@ def signup():
         db.close()
 
 
-# ============================================================
-# LOGIN PAGE
-# ============================================================
+# =========================
+# Login Page
+# =========================
 
 
 @app.route("/login", methods=["GET"])
@@ -468,9 +474,9 @@ def login_page():
     return render_template("login.html")
 
 
-# ============================================================
-# LOGIN
-# ============================================================
+# =========================
+# Login
+# =========================
 
 
 @app.route("/login", methods=["POST"])
@@ -482,17 +488,14 @@ def login():
     password = data["password"]
 
     db = get_db_connection()
-
-    cursor = db.cursor(cursor_factory=RealDictCursor)
+    cursor = db.cursor(dictionary=True)
 
     try:
 
         cursor.execute(
             """
-            SELECT *
-            FROM users
-            WHERE username = %s
-               OR email = %s
+            SELECT * FROM users
+            WHERE username = %s OR email = %s
             """,
             (username, username),
         )
@@ -503,6 +506,7 @@ def login():
 
             if check_password_hash(user["password"], password):
 
+                # Create Session
                 session["user_id"] = user["id"]
                 session["username"] = user["username"]
 
@@ -515,9 +519,9 @@ def login():
             401,
         )
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
-        return (jsonify({"success": False, "message": str(error)}), 500)
+        return jsonify({"success": False, "message": str(error)}), 500
 
     finally:
 
@@ -525,9 +529,9 @@ def login():
         db.close()
 
 
-# ============================================================
-# DASHBOARD
-# ============================================================
+# =========================
+# Dashboard
+# =========================
 
 
 @app.route("/dashboard")
@@ -541,30 +545,31 @@ def dashboard():
     return render_template("dashboard.html", full_name=full_name)
 
 
-# ============================================================
-# LOGOUT
-# ============================================================
+# =========================
+# Logout
+# =========================
 
 
 @app.route("/logout")
 def logout():
 
+    # Remove all session data
     session.clear()
 
+    # Redirect to login page
     return redirect(url_for("home"))
 
 
-# ============================================================
+# ===============================
 # DASHBOARD STATS
-# ============================================================
+# ===============================
 
 
 @app.route("/api/dashboard/stats", methods=["GET"])
 def dashboard_stats():
 
     if "user_id" not in session:
-
-        return (jsonify({"success": False, "message": "Please login first."}), 401)
+        return jsonify({"success": False, "message": "Please login first."}), 401
 
     db = None
     cursor = None
@@ -573,9 +578,11 @@ def dashboard_stats():
 
         db = get_db_connection()
 
-        cursor = db.cursor(cursor_factory=RealDictCursor)
+        cursor = db.cursor(dictionary=True)
 
+        # ===============================
         # TOTAL PRODUCTS
+        # ===============================
 
         cursor.execute("""
             SELECT COUNT(*) AS total_products
@@ -584,7 +591,9 @@ def dashboard_stats():
 
         total_products = cursor.fetchone()["total_products"]
 
+        # ===============================
         # TOTAL CATEGORIES
+        # ===============================
 
         cursor.execute("""
             SELECT COUNT(*) AS total_categories
@@ -593,7 +602,9 @@ def dashboard_stats():
 
         total_categories = cursor.fetchone()["total_categories"]
 
+        # ===============================
         # TOTAL CUSTOMERS
+        # ===============================
 
         cursor.execute("""
             SELECT COUNT(*) AS total_customers
@@ -602,7 +613,9 @@ def dashboard_stats():
 
         total_customers = cursor.fetchone()["total_customers"]
 
-        # LOW STOCK
+        # ===============================
+        # LOW STOCK PRODUCTS
+        # ===============================
 
         cursor.execute("""
             SELECT COUNT(*) AS low_stock
@@ -612,7 +625,9 @@ def dashboard_stats():
 
         low_stock = cursor.fetchone()["low_stock"]
 
-        # TODAY SALES
+        # ===============================
+        # TODAY'S SALES
+        # ===============================
 
         cursor.execute("""
             SELECT
@@ -620,13 +635,17 @@ def dashboard_stats():
                     SUM(final_amount),
                     0
                 ) AS today_sales
+
             FROM sales
-            WHERE DATE(created_at) = CURRENT_DATE
+
+            WHERE DATE(created_at) = CURDATE()
             """)
 
         today_sales = cursor.fetchone()["today_sales"]
 
+        # ===============================
         # RECENT SALES
+        # ===============================
 
         cursor.execute("""
             SELECT
@@ -637,9 +656,9 @@ def dashboard_stats():
                     'Walk-in Customer'
                 ) AS customer,
 
-                TO_CHAR(
+                DATE_FORMAT(
                     s.created_at,
-                    'DD Mon YYYY'
+                    '%d %b %Y'
                 ) AS date,
 
                 s.final_amount AS amount,
@@ -658,7 +677,9 @@ def dashboard_stats():
 
         recent_sales = cursor.fetchall()
 
-        # LOW STOCK PRODUCTS
+        # ===============================
+        # LOW STOCK PRODUCTS LIST
+        # ===============================
 
         cursor.execute("""
             SELECT
@@ -676,25 +697,27 @@ def dashboard_stats():
 
         low_stock_products = cursor.fetchall()
 
+        # ===============================
+        # RESPONSE
+        # ===============================
+
         return (
             jsonify(
-                make_json_safe(
-                    {
-                        "success": True,
-                        "total_products": total_products,
-                        "total_categories": total_categories,
-                        "total_customers": total_customers,
-                        "low_stock": low_stock,
-                        "today_sales": today_sales or 0,
-                        "recent_sales": recent_sales,
-                        "low_stock_products": low_stock_products,
-                    }
-                )
+                {
+                    "success": True,
+                    "total_products": total_products,
+                    "total_categories": total_categories,
+                    "total_customers": total_customers,
+                    "low_stock": low_stock,
+                    "today_sales": float(today_sales or 0),
+                    "recent_sales": recent_sales,
+                    "low_stock_products": low_stock_products,
+                }
             ),
             200,
         )
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
         print("Dashboard stats database error:", error)
 
@@ -731,9 +754,9 @@ def dashboard_stats():
             db.close()
 
 
-# ============================================================
-# CATEGORIES PAGE
-# ============================================================
+# =========================
+# Categories Page
+# =========================
 
 
 @app.route("/categories")
@@ -741,17 +764,16 @@ def categories():
     return render_template("categories.html")
 
 
-# ============================================================
-# GET ALL CATEGORIES
-# ============================================================
+# =========================
+# Get All Categories
+# =========================
 
 
 @app.route("/api/categories", methods=["GET"])
 def get_categories():
 
     db = get_db_connection()
-
-    cursor = db.cursor(cursor_factory=RealDictCursor)
+    cursor = db.cursor(dictionary=True)
 
     try:
 
@@ -763,19 +785,17 @@ def get_categories():
                 status,
                 created_at,
                 updated_at
-
             FROM categories
-
             ORDER BY id DESC
-            """)
+        """)
 
         categories = cursor.fetchall()
 
-        return jsonify(make_json_safe({"success": True, "categories": categories})), 200
+        return jsonify({"success": True, "categories": categories}), 200
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
-        return (jsonify({"success": False, "message": str(error)}), 500)
+        return jsonify({"success": False, "message": str(error)}), 500
 
     finally:
 
@@ -783,17 +803,16 @@ def get_categories():
         db.close()
 
 
-# ============================================================
-# GET ONE CATEGORY
-# ============================================================
+# =========================
+# Get One Category
+# =========================
 
 
 @app.route("/api/categories/<int:category_id>", methods=["GET"])
 def get_category(category_id):
 
     db = get_db_connection()
-
-    cursor = db.cursor(cursor_factory=RealDictCursor)
+    cursor = db.cursor(dictionary=True)
 
     try:
 
@@ -806,9 +825,7 @@ def get_category(category_id):
                 status,
                 created_at,
                 updated_at
-
             FROM categories
-
             WHERE id = %s
             """,
             (category_id,),
@@ -818,13 +835,13 @@ def get_category(category_id):
 
         if not category:
 
-            return (jsonify({"success": False, "message": "Category not found."}), 404)
+            return jsonify({"success": False, "message": "Category not found."}), 404
 
-        return jsonify(make_json_safe({"success": True, "category": category})), 200
+        return jsonify({"success": True, "category": category}), 200
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
-        return (jsonify({"success": False, "message": str(error)}), 500)
+        return jsonify({"success": False, "message": str(error)}), 500
 
     finally:
 
@@ -832,9 +849,9 @@ def get_category(category_id):
         db.close()
 
 
-# ============================================================
-# CREATE CATEGORY
-# ============================================================
+# =========================
+# Create Category
+# =========================
 
 
 @app.route("/api/categories", methods=["POST"])
@@ -843,23 +860,19 @@ def create_category():
     data = request.get_json()
 
     name = data.get("name", "").strip()
-
     description = data.get("description", "").strip()
-
     status = data.get("status", "active")
 
     if not name:
 
-        return (
-            jsonify({"success": False, "message": "Category name is required."}),
-            400,
-        )
+        return jsonify({"success": False, "message": "Category name is required."}), 400
 
     db = get_db_connection()
     cursor = db.cursor()
 
     try:
 
+        # Check duplicate category
         cursor.execute(
             """
             SELECT id
@@ -873,8 +886,6 @@ def create_category():
 
         if existing_category:
 
-            db.rollback()
-
             return (
                 jsonify({"success": False, "message": "Category already exists."}),
                 409,
@@ -883,23 +894,12 @@ def create_category():
         cursor.execute(
             """
             INSERT INTO categories
-            (
-                name,
-                description,
-                status
-            )
+                (name, description, status)
             VALUES
-            (
-                %s,
-                %s,
-                %s
-            )
-            RETURNING id
+                (%s, %s, %s)
             """,
             (name, description, status),
         )
-
-        category_id = cursor.fetchone()[0]
 
         db.commit()
 
@@ -908,17 +908,17 @@ def create_category():
                 {
                     "success": True,
                     "message": "Category created successfully.",
-                    "category_id": category_id,
+                    "category_id": cursor.lastrowid,
                 }
             ),
             201,
         )
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
         db.rollback()
 
-        return (jsonify({"success": False, "message": str(error)}), 500)
+        return jsonify({"success": False, "message": str(error)}), 500
 
     finally:
 
@@ -926,9 +926,9 @@ def create_category():
         db.close()
 
 
-# ============================================================
-# UPDATE CATEGORY
-# ============================================================
+# =========================
+# Update Category
+# =========================
 
 
 @app.route("/api/categories/<int:category_id>", methods=["PUT"])
@@ -937,24 +937,19 @@ def update_category(category_id):
     data = request.get_json()
 
     name = data.get("name", "").strip()
-
     description = data.get("description", "").strip()
-
     status = data.get("status", "active")
 
     if not name:
 
-        return (
-            jsonify({"success": False, "message": "Category name is required."}),
-            400,
-        )
+        return jsonify({"success": False, "message": "Category name is required."}), 400
 
     db = get_db_connection()
-
     cursor = db.cursor()
 
     try:
 
+        # Check whether category exists
         cursor.execute(
             """
             SELECT id
@@ -968,17 +963,14 @@ def update_category(category_id):
 
         if not category:
 
-            db.rollback()
+            return jsonify({"success": False, "message": "Category not found."}), 404
 
-            return (jsonify({"success": False, "message": "Category not found."}), 404)
-
+        # Check duplicate name
         cursor.execute(
             """
             SELECT id
             FROM categories
-
             WHERE LOWER(name) = LOWER(%s)
-
             AND id != %s
             """,
             (name, category_id),
@@ -987,8 +979,6 @@ def update_category(category_id):
         duplicate = cursor.fetchone()
 
         if duplicate:
-
-            db.rollback()
 
             return (
                 jsonify(
@@ -1003,13 +993,10 @@ def update_category(category_id):
         cursor.execute(
             """
             UPDATE categories
-
             SET
                 name = %s,
                 description = %s,
-                status = %s,
-                updated_at = NOW()
-
+                status = %s
             WHERE id = %s
             """,
             (name, description, status, category_id),
@@ -1022,11 +1009,11 @@ def update_category(category_id):
             200,
         )
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
         db.rollback()
 
-        return (jsonify({"success": False, "message": str(error)}), 500)
+        return jsonify({"success": False, "message": str(error)}), 500
 
     finally:
 
@@ -1034,20 +1021,20 @@ def update_category(category_id):
         db.close()
 
 
-# ============================================================
-# DELETE CATEGORY
-# ============================================================
+# =========================
+# Delete Category
+# =========================
 
 
 @app.route("/api/categories/<int:category_id>", methods=["DELETE"])
 def delete_category(category_id):
 
     db = get_db_connection()
-
     cursor = db.cursor()
 
     try:
 
+        # Check whether category exists
         cursor.execute(
             """
             SELECT id
@@ -1061,9 +1048,7 @@ def delete_category(category_id):
 
         if not category:
 
-            db.rollback()
-
-            return (jsonify({"success": False, "message": "Category not found."}), 404)
+            return jsonify({"success": False, "message": "Category not found."}), 404
 
         cursor.execute(
             """
@@ -1080,7 +1065,7 @@ def delete_category(category_id):
             200,
         )
 
-    except psycopg2.IntegrityError:
+    except mysql.connector.IntegrityError:
 
         db.rollback()
 
@@ -1094,11 +1079,11 @@ def delete_category(category_id):
             409,
         )
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
         db.rollback()
 
-        return (jsonify({"success": False, "message": str(error)}), 500)
+        return jsonify({"success": False, "message": str(error)}), 500
 
     finally:
 
@@ -1106,9 +1091,9 @@ def delete_category(category_id):
         db.close()
 
 
-# ============================================================
-# PRODUCTS PAGE
-# ============================================================
+# =========================
+# Products Page
+# =========================
 
 
 @app.route("/products")
@@ -1122,17 +1107,16 @@ def products():
     return render_template("products.html", full_name=full_name)
 
 
-# ============================================================
-# GET ALL PRODUCTS
-# ============================================================
+# =========================
+# Get All Products
+# =========================
 
 
 @app.route("/api/products", methods=["GET"])
 def get_products():
 
     db = get_db_connection()
-
-    cursor = db.cursor(cursor_factory=RealDictCursor)
+    cursor = db.cursor(dictionary=True)
 
     query = """
         SELECT
@@ -1148,12 +1132,9 @@ def get_products():
             products.description,
             products.created_at,
             products.updated_at
-
         FROM products
-
         INNER JOIN categories
             ON products.category_id = categories.id
-
         ORDER BY products.id DESC
     """
 
@@ -1163,11 +1144,11 @@ def get_products():
 
         products = cursor.fetchall()
 
-        return jsonify(make_json_safe(products)), 200
+        return jsonify(products), 200
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
-        return (jsonify({"success": False, "message": str(error)}), 500)
+        return jsonify({"success": False, "message": str(error)}), 500
 
     finally:
 
@@ -1175,9 +1156,9 @@ def get_products():
         db.close()
 
 
-# ============================================================
-# ADD PRODUCT
-# ============================================================
+# =========================
+# Add Product
+# =========================
 
 
 @app.route("/api/products", methods=["POST"])
@@ -1186,21 +1167,15 @@ def add_product():
     data = request.get_json()
 
     product_name = data.get("product_name")
-
     sku = data.get("sku")
-
     category_id = data.get("category_id")
-
     purchase_price = data.get("purchase_price")
-
     selling_price = data.get("selling_price")
-
     stock_quantity = data.get("stock_quantity", 0)
-
     minimum_stock = data.get("minimum_stock", 5)
-
     description = data.get("description", "")
 
+    # Validate required fields
     if not product_name or not sku or not category_id:
 
         return (
@@ -1214,12 +1189,10 @@ def add_product():
         )
 
     db = get_db_connection()
-
     cursor = db.cursor()
 
     query = """
-        INSERT INTO products
-        (
+        INSERT INTO products (
             product_name,
             sku,
             category_id,
@@ -1229,20 +1202,7 @@ def add_product():
             minimum_stock,
             description
         )
-
-        VALUES
-        (
-            %s,
-            %s,
-            %s,
-            %s,
-            %s,
-            %s,
-            %s,
-            %s
-        )
-
-        RETURNING id
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
     """
 
     values = (
@@ -1260,9 +1220,9 @@ def add_product():
 
         cursor.execute(query, values)
 
-        product_id = cursor.fetchone()[0]
-
         db.commit()
+
+        product_id = cursor.lastrowid
 
         return (
             jsonify(
@@ -1275,17 +1235,17 @@ def add_product():
             201,
         )
 
-    except psycopg2.IntegrityError:
+    except mysql.connector.IntegrityError:
 
         db.rollback()
 
-        return (jsonify({"success": False, "message": "SKU already exists"}), 409)
+        return jsonify({"success": False, "message": "SKU already exists"}), 409
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
         db.rollback()
 
-        return (jsonify({"success": False, "message": str(error)}), 500)
+        return jsonify({"success": False, "message": str(error)}), 500
 
     finally:
 
@@ -1293,17 +1253,16 @@ def add_product():
         db.close()
 
 
-# ============================================================
-# GET ONE PRODUCT
-# ============================================================
+# =========================
+# Get One Product
+# =========================
 
 
 @app.route("/api/products/<int:product_id>", methods=["GET"])
 def get_product(product_id):
 
     db = get_db_connection()
-
-    cursor = db.cursor(cursor_factory=RealDictCursor)
+    cursor = db.cursor(dictionary=True)
 
     query = """
         SELECT
@@ -1319,12 +1278,9 @@ def get_product(product_id):
             products.description,
             products.created_at,
             products.updated_at
-
         FROM products
-
         INNER JOIN categories
             ON products.category_id = categories.id
-
         WHERE products.id = %s
     """
 
@@ -1336,13 +1292,13 @@ def get_product(product_id):
 
         if not product:
 
-            return (jsonify({"success": False, "message": "Product not found"}), 404)
+            return jsonify({"success": False, "message": "Product not found"}), 404
 
-        return jsonify(make_json_safe({"success": True, "product": product})), 200
+        return jsonify({"success": True, "product": product}), 200
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
-        return (jsonify({"success": False, "message": str(error)}), 500)
+        return jsonify({"success": False, "message": str(error)}), 500
 
     finally:
 
@@ -1350,9 +1306,9 @@ def get_product(product_id):
         db.close()
 
 
-# ============================================================
-# UPDATE PRODUCT
-# ============================================================
+# =========================
+# Update Product
+# =========================
 
 
 @app.route("/api/products/<int:product_id>", methods=["PUT"])
@@ -1361,21 +1317,15 @@ def update_product(product_id):
     data = request.get_json()
 
     product_name = data.get("product_name")
-
     sku = data.get("sku")
-
     category_id = data.get("category_id")
-
     purchase_price = data.get("purchase_price")
-
     selling_price = data.get("selling_price")
-
     stock_quantity = data.get("stock_quantity")
-
     minimum_stock = data.get("minimum_stock")
-
     description = data.get("description", "")
 
+    # Validate required fields
     if not product_name or not sku or not category_id:
 
         return (
@@ -1389,11 +1339,11 @@ def update_product(product_id):
         )
 
     db = get_db_connection()
-
     cursor = db.cursor()
 
     try:
 
+        # Check if product exists
         cursor.execute(
             """
             SELECT id
@@ -1407,13 +1357,10 @@ def update_product(product_id):
 
         if not product:
 
-            db.rollback()
-
-            return (jsonify({"success": False, "message": "Product not found"}), 404)
+            return jsonify({"success": False, "message": "Product not found"}), 404
 
         query = """
             UPDATE products
-
             SET
                 product_name = %s,
                 sku = %s,
@@ -1422,9 +1369,7 @@ def update_product(product_id):
                 selling_price = %s,
                 stock_quantity = %s,
                 minimum_stock = %s,
-                description = %s,
-                updated_at = NOW()
-
+                description = %s
             WHERE id = %s
         """
 
@@ -1449,17 +1394,17 @@ def update_product(product_id):
             200,
         )
 
-    except psycopg2.IntegrityError:
+    except mysql.connector.IntegrityError:
 
         db.rollback()
 
-        return (jsonify({"success": False, "message": "SKU already exists"}), 409)
+        return jsonify({"success": False, "message": "SKU already exists"}), 409
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
         db.rollback()
 
-        return (jsonify({"success": False, "message": str(error)}), 500)
+        return jsonify({"success": False, "message": str(error)}), 500
 
     finally:
 
@@ -1467,20 +1412,20 @@ def update_product(product_id):
         db.close()
 
 
-# ============================================================
-# DELETE PRODUCT
-# ============================================================
+# =========================
+# Delete Product
+# =========================
 
 
 @app.route("/api/products/<int:product_id>", methods=["DELETE"])
 def delete_product(product_id):
 
     db = get_db_connection()
-
     cursor = db.cursor()
 
     try:
 
+        # Check if product exists
         cursor.execute(
             """
             SELECT id
@@ -1494,9 +1439,7 @@ def delete_product(product_id):
 
         if not product:
 
-            db.rollback()
-
-            return (jsonify({"success": False, "message": "Product not found"}), 404)
+            return jsonify({"success": False, "message": "Product not found"}), 404
 
         cursor.execute(
             """
@@ -1513,7 +1456,7 @@ def delete_product(product_id):
             200,
         )
 
-    except psycopg2.IntegrityError:
+    except mysql.connector.IntegrityError:
 
         db.rollback()
 
@@ -1527,11 +1470,11 @@ def delete_product(product_id):
             409,
         )
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
         db.rollback()
 
-        return (jsonify({"success": False, "message": str(error)}), 500)
+        return jsonify({"success": False, "message": str(error)}), 500
 
     finally:
 
@@ -1539,9 +1482,9 @@ def delete_product(product_id):
         db.close()
 
 
-# ============================================================
-# STOCK PAGE
-# ============================================================
+# =========================
+# Stock Page
+# =========================
 
 
 @app.route("/stock")
@@ -1555,17 +1498,16 @@ def stock():
     return render_template("stock.html", full_name=full_name)
 
 
-# ============================================================
-# STOCK API
-# ============================================================
+# =========================
+# Stock API
+# =========================
 
 
 @app.route("/api/stock", methods=["GET"])
 def get_stock():
 
     db = get_db_connection()
-
-    cursor = db.cursor(cursor_factory=RealDictCursor)
+    cursor = db.cursor(dictionary=True)
 
     query = """
         SELECT
@@ -1576,12 +1518,9 @@ def get_stock():
             categories.name AS category_name,
             products.stock_quantity,
             products.minimum_stock
-
         FROM products
-
         INNER JOIN categories
             ON products.category_id = categories.id
-
         ORDER BY products.id DESC
     """
 
@@ -1591,11 +1530,11 @@ def get_stock():
 
         stock = cursor.fetchall()
 
-        return jsonify(make_json_safe({"success": True, "stock": stock})), 200
+        return jsonify({"success": True, "stock": stock}), 200
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
-        return (jsonify({"success": False, "message": str(error)}), 500)
+        return jsonify({"success": False, "message": str(error)}), 500
 
     finally:
 
@@ -1603,9 +1542,9 @@ def get_stock():
         db.close()
 
 
-# ============================================================
-# UPDATE STOCK
-# ============================================================
+# =========================
+# Update Stock
+# =========================
 
 
 @app.route("/api/stock/<int:product_id>", methods=["PUT"])
@@ -1614,12 +1553,13 @@ def update_stock(product_id):
     data = request.get_json()
 
     quantity = data.get("quantity")
-
     action = data.get("action")
+
+    # Validate quantity
 
     if quantity is None:
 
-        return (jsonify({"success": False, "message": "Quantity is required."}), 400)
+        return jsonify({"success": False, "message": "Quantity is required."}), 400
 
     try:
 
@@ -1641,15 +1581,18 @@ def update_stock(product_id):
             400,
         )
 
+    # Validate action
+
     if action not in ["in", "out"]:
 
-        return (jsonify({"success": False, "message": "Invalid stock action."}), 400)
+        return jsonify({"success": False, "message": "Invalid stock action."}), 400
 
     db = get_db_connection()
-
-    cursor = db.cursor(cursor_factory=RealDictCursor)
+    cursor = db.cursor(dictionary=True)
 
     try:
+
+        # Get current stock
 
         cursor.execute(
             """
@@ -1657,9 +1600,7 @@ def update_stock(product_id):
                 id,
                 product_name,
                 stock_quantity
-
             FROM products
-
             WHERE id = %s
             """,
             (product_id,),
@@ -1669,11 +1610,13 @@ def update_stock(product_id):
 
         if not product:
 
-            db.rollback()
-
-            return (jsonify({"success": False, "message": "Product not found."}), 404)
+            return jsonify({"success": False, "message": "Product not found."}), 404
 
         current_stock = int(product["stock_quantity"])
+
+        # =========================
+        # Stock In
+        # =========================
 
         if action == "in":
 
@@ -1681,11 +1624,13 @@ def update_stock(product_id):
 
             message = f"{quantity} units added successfully."
 
+        # =========================
+        # Stock Out
+        # =========================
+
         else:
 
             if quantity > current_stock:
-
-                db.rollback()
 
                 return (
                     jsonify(
@@ -1701,14 +1646,12 @@ def update_stock(product_id):
 
             message = f"{quantity} units removed successfully."
 
+        # Update database
+
         cursor.execute(
             """
             UPDATE products
-
-            SET
-                stock_quantity = %s,
-                updated_at = NOW()
-
+            SET stock_quantity = %s
             WHERE id = %s
             """,
             (new_stock, product_id),
@@ -1721,11 +1664,11 @@ def update_stock(product_id):
             200,
         )
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
         db.rollback()
 
-        return (jsonify({"success": False, "message": str(error)}), 500)
+        return jsonify({"success": False, "message": str(error)}), 500
 
     finally:
 
@@ -1733,9 +1676,9 @@ def update_stock(product_id):
         db.close()
 
 
-# ============================================================
-# CUSTOMERS PAGE
-# ============================================================
+# =========================
+# Customers
+# =========================
 
 
 @app.route("/customers")
@@ -1749,17 +1692,16 @@ def customers():
     return render_template("customers.html", full_name=full_name)
 
 
-# ============================================================
-# GET CUSTOMERS
-# ============================================================
+# =========================
+# GET — Load all customers
+# =========================
 
 
 @app.route("/api/customers", methods=["GET"])
 def get_customers():
 
     db = get_db_connection()
-
-    cursor = db.cursor(cursor_factory=RealDictCursor)
+    cursor = db.cursor(dictionary=True)
 
     try:
 
@@ -1772,19 +1714,17 @@ def get_customers():
                 address,
                 created_at,
                 updated_at
-
             FROM customers
-
             ORDER BY id DESC
-            """)
+        """)
 
         customers = cursor.fetchall()
 
-        return jsonify(make_json_safe({"success": True, "customers": customers})), 200
+        return jsonify({"success": True, "customers": customers}), 200
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
-        return (jsonify({"success": False, "message": str(error)}), 500)
+        return jsonify({"success": False, "message": str(error)}), 500
 
     finally:
 
@@ -1792,33 +1732,24 @@ def get_customers():
         db.close()
 
 
-# ============================================================
-# ADD CUSTOMER
-# ============================================================
-
-
+# =========================
+# POST — Add Customer
+# =========================
 @app.route("/api/customers", methods=["POST"])
 def add_customer():
 
     data = request.get_json()
 
     customer_name = data.get("customer_name")
-
     phone = data.get("phone")
-
     email = data.get("email")
-
     address = data.get("address")
 
     if not customer_name or not customer_name.strip():
 
-        return (
-            jsonify({"success": False, "message": "Customer name is required."}),
-            400,
-        )
+        return jsonify({"success": False, "message": "Customer name is required."}), 400
 
     db = get_db_connection()
-
     cursor = db.cursor()
 
     try:
@@ -1832,15 +1763,8 @@ def add_customer():
                 email,
                 address
             )
-
-            VALUES
-            (
-                %s,
-                %s,
-                %s,
-                %s
-            )
-            """,
+            VALUES (%s, %s, %s, %s)
+        """,
             (customer_name.strip(), phone, email, address),
         )
 
@@ -1851,11 +1775,11 @@ def add_customer():
             201,
         )
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
         db.rollback()
 
-        return (jsonify({"success": False, "message": str(error)}), 500)
+        return jsonify({"success": False, "message": str(error)}), 500
 
     finally:
 
@@ -1863,43 +1787,36 @@ def add_customer():
         db.close()
 
 
-# ============================================================
-# UPDATE CUSTOMER
-# ============================================================
-
-
+# =========================
+# PUT — Update Customer
+# =========================
 @app.route("/api/customers/<int:customer_id>", methods=["PUT"])
 def update_customer(customer_id):
 
     data = request.get_json()
 
     customer_name = data.get("customer_name")
-
     phone = data.get("phone")
-
     email = data.get("email")
-
     address = data.get("address")
 
     if not customer_name or not customer_name.strip():
 
-        return (
-            jsonify({"success": False, "message": "Customer name is required."}),
-            400,
-        )
+        return jsonify({"success": False, "message": "Customer name is required."}), 400
 
     db = get_db_connection()
-
-    cursor = db.cursor(cursor_factory=RealDictCursor)
+    cursor = db.cursor(dictionary=True)
 
     try:
+
+        # Check customer exists
 
         cursor.execute(
             """
             SELECT id
             FROM customers
             WHERE id = %s
-            """,
+        """,
             (customer_id,),
         )
 
@@ -1907,9 +1824,9 @@ def update_customer(customer_id):
 
         if not customer:
 
-            db.rollback()
+            return jsonify({"success": False, "message": "Customer not found."}), 404
 
-            return (jsonify({"success": False, "message": "Customer not found."}), 404)
+        # Update customer
 
         cursor.execute(
             """
@@ -1919,11 +1836,10 @@ def update_customer(customer_id):
                 customer_name = %s,
                 phone = %s,
                 email = %s,
-                address = %s,
-                updated_at = NOW()
+                address = %s
 
             WHERE id = %s
-            """,
+        """,
             (customer_name.strip(), phone, email, address, customer_id),
         )
 
@@ -1934,11 +1850,11 @@ def update_customer(customer_id):
             200,
         )
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
         db.rollback()
 
-        return (jsonify({"success": False, "message": str(error)}), 500)
+        return jsonify({"success": False, "message": str(error)}), 500
 
     finally:
 
@@ -1946,20 +1862,18 @@ def update_customer(customer_id):
         db.close()
 
 
-# ============================================================
-# DELETE CUSTOMER
-# ============================================================
-
-
+# =========================
+# Delete Customer
+# =========================
 @app.route("/api/customers/<int:customer_id>", methods=["DELETE"])
 def delete_customer(customer_id):
 
     db = get_db_connection()
-
     cursor = db.cursor()
 
     try:
 
+        # Check if customer exists
         cursor.execute(
             """
             SELECT id
@@ -1972,11 +1886,9 @@ def delete_customer(customer_id):
         customer = cursor.fetchone()
 
         if not customer:
+            return jsonify({"success": False, "message": "Customer not found."}), 404
 
-            db.rollback()
-
-            return (jsonify({"success": False, "message": "Customer not found."}), 404)
-
+        # Delete customer
         cursor.execute(
             """
             DELETE FROM customers
@@ -1992,11 +1904,11 @@ def delete_customer(customer_id):
             200,
         )
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
         db.rollback()
 
-        return (jsonify({"success": False, "message": str(error)}), 500)
+        return jsonify({"success": False, "message": str(error)}), 500
 
     finally:
 
@@ -2004,11 +1916,9 @@ def delete_customer(customer_id):
         db.close()
 
 
-# ============================================================
-# SALES PAGE
-# ============================================================
-
-
+# =========================
+# Sales
+# =========================
 @app.route("/sales")
 def sales():
 
@@ -2020,36 +1930,33 @@ def sales():
     return render_template("sales.html", full_name=full_name)
 
 
-# ============================================================
+# ===============================
 # CREATE SALE
-# ============================================================
+# ===============================
 
 
 @app.route("/api/sales", methods=["POST"])
 def create_sale():
 
     if "user_id" not in session:
-
-        return (jsonify({"success": False, "message": "Please login first."}), 401)
+        return jsonify({"success": False, "message": "Please login first."}), 401
 
     data = request.get_json()
 
     if not data:
-
-        return (jsonify({"success": False, "message": "No sale data received."}), 400)
+        return jsonify({"success": False, "message": "No sale data received."}), 400
 
     customer_id = data.get("customer_id")
-
     total_amount = data.get("total_amount", 0)
-
     discount = data.get("discount", 0)
-
     final_amount = data.get("final_amount", 0)
-
     items = data.get("items", [])
 
-    if not items:
+    # ===============================
+    # BASIC VALIDATION
+    # ===============================
 
+    if not items:
         return (
             jsonify(
                 {"success": False, "message": "Sale must contain at least one product."}
@@ -2058,16 +1965,13 @@ def create_sale():
         )
 
     try:
-
         total_amount = float(total_amount)
-
         discount = float(discount)
-
         final_amount = float(final_amount)
 
     except (TypeError, ValueError):
 
-        return (jsonify({"success": False, "message": "Invalid sale amount."}), 400)
+        return jsonify({"success": False, "message": "Invalid sale amount."}), 400
 
     if total_amount < 0 or discount < 0 or final_amount < 0:
 
@@ -2093,9 +1997,13 @@ def create_sale():
 
     try:
 
+        # ===============================
+        # DATABASE CONNECTION
+        # ===============================
+
         db = get_db_connection()
 
-        cursor = db.cursor(cursor_factory=RealDictCursor)
+        cursor = db.cursor(dictionary=True)
 
         # ===============================
         # CHECK CUSTOMER
@@ -2116,8 +2024,6 @@ def create_sale():
 
             if not customer:
 
-                db.rollback()
-
                 return (
                     jsonify({"success": False, "message": "Customer not found."}),
                     404,
@@ -2134,22 +2040,17 @@ def create_sale():
         for item in items:
 
             product_id = item.get("product_id")
-
             quantity = item.get("quantity")
 
             if not product_id or not quantity:
 
                 db.rollback()
 
-                return (
-                    jsonify({"success": False, "message": "Invalid sale item."}),
-                    400,
-                )
+                return jsonify({"success": False, "message": "Invalid sale item."}), 400
 
             try:
 
                 product_id = int(product_id)
-
                 quantity = int(quantity)
 
             except (TypeError, ValueError):
@@ -2184,11 +2085,8 @@ def create_sale():
                     product_name,
                     selling_price,
                     stock_quantity
-
                 FROM products
-
                 WHERE id = %s
-
                 FOR UPDATE
                 """,
                 (product_id,),
@@ -2252,10 +2150,7 @@ def create_sale():
 
             db.rollback()
 
-            return (
-                jsonify({"success": False, "message": "Sale total is invalid."}),
-                400,
-            )
+            return jsonify({"success": False, "message": "Sale total is invalid."}), 400
 
         # ===============================
         # CREATE SALE
@@ -2264,30 +2159,27 @@ def create_sale():
         cursor.execute(
             """
             INSERT INTO sales
+                (
+                    customer_id,
+                    total_amount,
+                    discount,
+                    final_amount
+                )
+            VALUES
+                (%s, %s, %s, %s)
+            """,
             (
                 customer_id,
-                total_amount,
+                calculated_total,
                 discount,
-                final_amount
-            )
-
-            VALUES
-            (
-                %s,
-                %s,
-                %s,
-                %s
-            )
-
-            RETURNING id
-            """,
-            (customer_id, calculated_total, discount, calculated_final),
+                calculated_final,
+            ),
         )
 
-        sale_id = cursor.fetchone()["id"]
+        sale_id = cursor.lastrowid
 
         # ===============================
-        # SALE ITEMS + STOCK
+        # CREATE SALE ITEMS
         # ===============================
 
         for item in checked_items:
@@ -2295,22 +2187,15 @@ def create_sale():
             cursor.execute(
                 """
                 INSERT INTO sale_items
-                (
-                    sale_id,
-                    product_id,
-                    quantity,
-                    unit_price,
-                    subtotal
-                )
-
+                    (
+                        sale_id,
+                        product_id,
+                        quantity,
+                        unit_price,
+                        subtotal
+                    )
                 VALUES
-                (
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s
-                )
+                    (%s, %s, %s, %s, %s)
                 """,
                 (
                     sale_id,
@@ -2321,28 +2206,31 @@ def create_sale():
                 ),
             )
 
+            # ===============================
+            # DEDUCT STOCK
+            # ===============================
+
             cursor.execute(
                 """
                 UPDATE products
-
-                SET
-                    stock_quantity =
-                        stock_quantity - %s,
-                    updated_at = NOW()
-
+                SET stock_quantity =
+                    stock_quantity - %s
                 WHERE id = %s
                 """,
-                (item["quantity"], item["product_id"]),
+                (
+                    item["quantity"],
+                    item["product_id"],
+                ),
             )
 
         # ===============================
-        # COMMIT
+        # COMMIT TRANSACTION
         # ===============================
 
         db.commit()
 
         # ===============================
-        # CUSTOMER NAME
+        # GET CUSTOMER NAME
         # ===============================
 
         customer_name = "Walk-in Customer"
@@ -2365,7 +2253,7 @@ def create_sale():
                 customer_name = customer["customer_name"]
 
         # ===============================
-        # BUSINESS CURRENCY
+        # GET BUSINESS CURRENCY
         # ===============================
 
         currency = "PKR"
@@ -2384,7 +2272,7 @@ def create_sale():
             currency = business_settings["currency"]
 
         # ===============================
-        # INVOICE ITEMS
+        # GET SALE ITEMS FOR INVOICE
         # ===============================
 
         cursor.execute(
@@ -2395,14 +2283,10 @@ def create_sale():
                 si.quantity,
                 si.unit_price,
                 si.subtotal
-
             FROM sale_items si
-
             INNER JOIN products p
                 ON si.product_id = p.id
-
             WHERE si.sale_id = %s
-
             ORDER BY si.id ASC
             """,
             (sale_id,),
@@ -2411,7 +2295,7 @@ def create_sale():
         invoice_items = cursor.fetchall()
 
         # ===============================
-        # GENERATE INVOICE
+        # GENERATE INVOICE IMAGE
         # ===============================
 
         invoice_url = generate_invoice_image(
@@ -2423,6 +2307,10 @@ def create_sale():
             final_amount=calculated_final,
             currency=currency,
         )
+
+        # ===============================
+        # SUCCESS RESPONSE
+        # ===============================
 
         return (
             jsonify(
@@ -2436,7 +2324,7 @@ def create_sale():
             201,
         )
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
         if db:
             db.rollback()
@@ -2476,9 +2364,9 @@ def create_sale():
             db.close()
 
 
-# ============================================================
+# ===============================
 # SALES HISTORY PAGE
-# ============================================================
+# ===============================
 
 
 @app.route("/sales-history")
@@ -2492,17 +2380,16 @@ def sales_history():
     return render_template("sales-history.html", full_name=full_name)
 
 
-# ============================================================
+# ===============================
 # GET SALES HISTORY
-# ============================================================
+# ===============================
 
 
 @app.route("/api/sales", methods=["GET"])
 def get_sales():
 
     if "user_id" not in session:
-
-        return (jsonify({"success": False, "message": "Please login first."}), 401)
+        return jsonify({"success": False, "message": "Please login first."}), 401
 
     db = None
     cursor = None
@@ -2511,7 +2398,7 @@ def get_sales():
 
         db = get_db_connection()
 
-        cursor = db.cursor(cursor_factory=RealDictCursor)
+        cursor = db.cursor(dictionary=True)
 
         cursor.execute("""
             SELECT
@@ -2538,9 +2425,9 @@ def get_sales():
 
         sales = cursor.fetchall()
 
-        return jsonify(make_json_safe({"success": True, "sales": sales})), 200
+        return jsonify({"success": True, "sales": sales}), 200
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
         print("Sales history database error:", error)
 
@@ -2577,17 +2464,16 @@ def get_sales():
             db.close()
 
 
-# ============================================================
+# ===============================
 # GET SINGLE SALE DETAILS
-# ============================================================
+# ===============================
 
 
 @app.route("/api/sales/<int:sale_id>", methods=["GET"])
 def get_sale_details(sale_id):
 
     if "user_id" not in session:
-
-        return (jsonify({"success": False, "message": "Please login first."}), 401)
+        return jsonify({"success": False, "message": "Please login first."}), 401
 
     db = None
     cursor = None
@@ -2596,9 +2482,11 @@ def get_sale_details(sale_id):
 
         db = get_db_connection()
 
-        cursor = db.cursor(cursor_factory=RealDictCursor)
+        cursor = db.cursor(dictionary=True)
 
-        # SALE
+        # ===============================
+        # SALE INFORMATION
+        # ===============================
 
         cursor.execute(
             """
@@ -2630,9 +2518,11 @@ def get_sale_details(sale_id):
 
         if not sale:
 
-            return (jsonify({"success": False, "message": "Sale not found."}), 404)
+            return jsonify({"success": False, "message": "Sale not found."}), 404
 
-        # ITEMS
+        # ===============================
+        # SALE ITEMS
+        # ===============================
 
         cursor.execute(
             """
@@ -2661,12 +2551,9 @@ def get_sale_details(sale_id):
 
         items = cursor.fetchall()
 
-        return (
-            jsonify(make_json_safe({"success": True, "sale": sale, "items": items})),
-            200,
-        )
+        return jsonify({"success": True, "sale": sale, "items": items}), 200
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
         print("Sale details database error:", error)
 
@@ -2703,14 +2590,11 @@ def get_sale_details(sale_id):
             db.close()
 
 
-# ============================================================
-# SETTINGS PAGE
-# ============================================================
-
-
+# =========================
+# Settings
+# =========================
 @app.route("/settings")
 def settings():
-
     if "user_id" not in session:
         return redirect(url_for("home"))
 
@@ -2719,17 +2603,16 @@ def settings():
     return render_template("settings.html", full_name=full_name)
 
 
-# ============================================================
+# ========================================
 # SETTINGS - GET PROFILE
-# ============================================================
+# ========================================
 
 
 @app.route("/api/settings/profile", methods=["GET"])
 def get_settings_profile():
 
     if "user_id" not in session:
-
-        return (jsonify({"success": False, "message": "Please login first."}), 401)
+        return jsonify({"success": False, "message": "Please login first."}), 401
 
     db = None
     cursor = None
@@ -2737,8 +2620,7 @@ def get_settings_profile():
     try:
 
         db = get_db_connection()
-
-        cursor = db.cursor(cursor_factory=RealDictCursor)
+        cursor = db.cursor(dictionary=True)
 
         cursor.execute(
             """
@@ -2748,9 +2630,7 @@ def get_settings_profile():
                 username,
                 email,
                 phone
-
             FROM users
-
             WHERE id = %s
             """,
             (session["user_id"],),
@@ -2759,12 +2639,11 @@ def get_settings_profile():
         user = cursor.fetchone()
 
         if not user:
+            return jsonify({"success": False, "message": "User not found."}), 404
 
-            return (jsonify({"success": False, "message": "User not found."}), 404)
+        return jsonify({"success": True, "user": user}), 200
 
-        return jsonify(make_json_safe({"success": True, "user": user})), 200
-
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
         print("Settings profile database error:", error)
 
@@ -2798,34 +2677,28 @@ def get_settings_profile():
             db.close()
 
 
-# ============================================================
+# ========================================
 # SETTINGS - UPDATE PROFILE
-# ============================================================
+# ========================================
 
 
 @app.route("/api/settings/profile", methods=["PUT"])
 def update_settings_profile():
 
     if "user_id" not in session:
-
-        return (jsonify({"success": False, "message": "Please login first."}), 401)
+        return jsonify({"success": False, "message": "Please login first."}), 401
 
     data = request.get_json()
 
     if not data:
-
-        return (jsonify({"success": False, "message": "No data received."}), 400)
+        return jsonify({"success": False, "message": "No data received."}), 400
 
     full_name = data.get("fullName", "").strip()
-
     username = data.get("username", "").strip()
-
     email = data.get("email", "").strip()
-
     phone = data.get("phone", "").strip()
 
     if not full_name or not username or not email:
-
         return (
             jsonify(
                 {
@@ -2842,22 +2715,16 @@ def update_settings_profile():
     try:
 
         db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
 
-        cursor = db.cursor(cursor_factory=RealDictCursor)
+        # Check username/email already used by another user
 
         cursor.execute(
             """
             SELECT id
-
             FROM users
-
-            WHERE
-                (
-                    username = %s
-                    OR email = %s
-                )
-
-                AND id != %s
+            WHERE (username = %s OR email = %s)
+            AND id != %s
             """,
             (username, email, session["user_id"]),
         )
@@ -2865,9 +2732,6 @@ def update_settings_profile():
         existing_user = cursor.fetchone()
 
         if existing_user:
-
-            db.rollback()
-
             return (
                 jsonify(
                     {
@@ -2878,22 +2742,24 @@ def update_settings_profile():
                 409,
             )
 
+        # Update profile
+
         cursor.execute(
             """
             UPDATE users
-
             SET
                 fullname = %s,
                 username = %s,
                 email = %s,
                 phone = %s
-
             WHERE id = %s
             """,
             (full_name, username, email, phone, session["user_id"]),
         )
 
         db.commit()
+
+        # Update session username
 
         session["username"] = username
 
@@ -2902,7 +2768,7 @@ def update_settings_profile():
             200,
         )
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
         if db:
             db.rollback()
@@ -2942,46 +2808,45 @@ def update_settings_profile():
             db.close()
 
 
-# ============================================================
+# ========================================
 # SETTINGS - CHANGE PASSWORD
-# ============================================================
+# ========================================
 
 
 @app.route("/api/settings/password", methods=["PUT"])
 def change_password():
 
     if "user_id" not in session:
-
-        return (jsonify({"success": False, "message": "Please login first."}), 401)
+        return jsonify({"success": False, "message": "Please login first."}), 401
 
     data = request.get_json()
 
     if not data:
-
-        return (jsonify({"success": False, "message": "No data received."}), 400)
+        return jsonify({"success": False, "message": "No data received."}), 400
 
     current_password = data.get("currentPassword", "")
-
     new_password = data.get("newPassword", "")
-
     confirm_password = data.get("confirmPassword", "")
 
-    if not current_password or not new_password or not confirm_password:
+    # Required fields
 
+    if not current_password or not new_password or not confirm_password:
         return (
             jsonify({"success": False, "message": "All password fields are required."}),
             400,
         )
 
-    if new_password != confirm_password:
+    # Confirm new password
 
+    if new_password != confirm_password:
         return (
             jsonify({"success": False, "message": "New passwords do not match."}),
             400,
         )
 
-    if len(new_password) < 7:
+    # Password length
 
+    if len(new_password) < 7:
         return (
             jsonify(
                 {
@@ -2998,15 +2863,14 @@ def change_password():
     try:
 
         db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
 
-        cursor = db.cursor(cursor_factory=RealDictCursor)
+        # Get current password hash
 
         cursor.execute(
             """
             SELECT password
-
             FROM users
-
             WHERE id = %s
             """,
             (session["user_id"],),
@@ -3015,11 +2879,11 @@ def change_password():
         user = cursor.fetchone()
 
         if not user:
+            return jsonify({"success": False, "message": "User not found."}), 404
 
-            return (jsonify({"success": False, "message": "User not found."}), 404)
+        # Check current password
 
         if not check_password_hash(user["password"], current_password):
-
             return (
                 jsonify(
                     {"success": False, "message": "Current password is incorrect."}
@@ -3027,8 +2891,9 @@ def change_password():
                 401,
             )
 
-        if check_password_hash(user["password"], new_password):
+        # Don't allow same password
 
+        if check_password_hash(user["password"], new_password):
             return (
                 jsonify(
                     {
@@ -3039,14 +2904,16 @@ def change_password():
                 400,
             )
 
+        # Hash new password
+
         new_password_hash = generate_password_hash(new_password)
+
+        # Update password
 
         cursor.execute(
             """
             UPDATE users
-
             SET password = %s
-
             WHERE id = %s
             """,
             (new_password_hash, session["user_id"]),
@@ -3059,7 +2926,7 @@ def change_password():
             200,
         )
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
         if db:
             db.rollback()
@@ -3099,17 +2966,16 @@ def change_password():
             db.close()
 
 
-# ============================================================
+# ========================================
 # SETTINGS - GET BUSINESS INFORMATION
-# ============================================================
+# ========================================
 
 
 @app.route("/api/settings/business", methods=["GET"])
 def get_business_settings():
 
     if "user_id" not in session:
-
-        return (jsonify({"success": False, "message": "Please login first."}), 401)
+        return jsonify({"success": False, "message": "Please login first."}), 401
 
     db = None
     cursor = None
@@ -3117,8 +2983,7 @@ def get_business_settings():
     try:
 
         db = get_db_connection()
-
-        cursor = db.cursor(cursor_factory=RealDictCursor)
+        cursor = db.cursor(dictionary=True)
 
         cursor.execute("""
             SELECT
@@ -3128,26 +2993,22 @@ def get_business_settings():
                 business_email,
                 currency,
                 business_address
-
             FROM business_settings
-
             ORDER BY id ASC
-
             LIMIT 1
             """)
 
         business = cursor.fetchone()
 
         if not business:
-
             return (
                 jsonify({"success": False, "message": "Business settings not found."}),
                 404,
             )
 
-        return jsonify(make_json_safe({"success": True, "business": business})), 200
+        return jsonify({"success": True, "business": business}), 200
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
         print("Business settings database error:", error)
 
@@ -3184,47 +3045,40 @@ def get_business_settings():
             db.close()
 
 
-# ============================================================
+# ========================================
 # SETTINGS - UPDATE BUSINESS INFORMATION
-# ============================================================
+# ========================================
 
 
 @app.route("/api/settings/business", methods=["PUT"])
 def update_business_settings():
 
     if "user_id" not in session:
-
-        return (jsonify({"success": False, "message": "Please login first."}), 401)
+        return jsonify({"success": False, "message": "Please login first."}), 401
 
     data = request.get_json()
 
     if not data:
-
-        return (jsonify({"success": False, "message": "No data received."}), 400)
+        return jsonify({"success": False, "message": "No data received."}), 400
 
     business_name = data.get("businessName", "").strip()
-
     business_phone = data.get("businessPhone", "").strip()
-
     business_email = data.get("businessEmail", "").strip()
-
     currency = data.get("currency", "PKR").strip()
-
     business_address = data.get("businessAddress", "").strip()
 
     if not business_name:
+        return jsonify({"success": False, "message": "Business name is required."}), 400
 
-        return (
-            jsonify({"success": False, "message": "Business name is required."}),
-            400,
-        )
+    # Validate email only if provided
 
     if business_email:
+
+        import re
 
         email_pattern = r"^[^\s@]+@[^\s@]+\.[^\s@]+$"
 
         if not re.match(email_pattern, business_email):
-
             return (
                 jsonify(
                     {
@@ -3241,16 +3095,14 @@ def update_business_settings():
     try:
 
         db = get_db_connection()
-
         cursor = db.cursor()
+
+        # Check whether settings already exist
 
         cursor.execute("""
             SELECT id
-
             FROM business_settings
-
             ORDER BY id ASC
-
             LIMIT 1
             """)
 
@@ -3258,18 +3110,17 @@ def update_business_settings():
 
         if existing_settings:
 
+            # Update existing record
+
             cursor.execute(
                 """
                 UPDATE business_settings
-
                 SET
                     business_name = %s,
                     business_phone = %s,
                     business_email = %s,
                     currency = %s,
-                    business_address = %s,
-                    updated_at = NOW()
-
+                    business_address = %s
                 WHERE id = %s
                 """,
                 (
@@ -3284,25 +3135,18 @@ def update_business_settings():
 
         else:
 
+            # Create settings if no record exists
+
             cursor.execute(
                 """
-                INSERT INTO business_settings
-                (
+                INSERT INTO business_settings (
                     business_name,
                     business_phone,
                     business_email,
                     currency,
                     business_address
                 )
-
-                VALUES
-                (
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s
-                )
+                VALUES (%s, %s, %s, %s, %s)
                 """,
                 (
                     business_name,
@@ -3325,7 +3169,7 @@ def update_business_settings():
             200,
         )
 
-    except psycopg2.Error as error:
+    except mysql.connector.Error as error:
 
         if db:
             db.rollback()
@@ -3368,9 +3212,9 @@ def update_business_settings():
             db.close()
 
 
-# ============================================================
-# RUN FLASK
-# ============================================================
+# =========================
+# Run Flask
+# =========================
 
 if __name__ == "__main__":
     app.run(debug=True)
