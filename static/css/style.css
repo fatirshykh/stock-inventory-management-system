@@ -1,17 +1,253 @@
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
+/* ==========================================
+   GLOBAL VARIABLES
+========================================== */
+
+:root {
+  --primary: #ef4444;
+  --primary-light: #f87171;
+  --primary-hover: #dc2626;
+
+  --background: #0b0f14;
+  --background-secondary: #11161d;
+
+  --card: #151a21;
+  --card-hover: #1a2028;
+
+  --sidebar: #0d1117;
+  --sidebar-hover: #171d25;
+  --sidebar-active: #ffffff;
+
+  --border: #252c35;
+  --border-light: #1c232c;
+
+  --text: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --text-light: #6b7280;
+
+  --success: #22c55e;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --info: #3b82f6;
+
+  --radius: 14px;
+  --radius-small: 10px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+
+  --transition: 0.2s ease;
+
+  --font-primary: Arial, sans-serif;
+}
+/* ==========================================
+   SIMS GLOBAL RESET
+========================================== */
 
 * {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
-:root {
-  --color-1: #f29191;
-  --color-2: #b1e5e6;
-  --color-3: #4a4a4a;
-  --color-white: #ffff;
-  --color-black: #000;
-  --font-primary: "Playfair Display", serif;
-  --font-secondary: "Montserrat", sans-serif;
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-primary);
+
+  background: var(--background);
+
+  color: var(--text);
+
+  line-height: 1.5;
+}
+/* ==========================================
+   SIMS COMMON SIDEBAR
+========================================== */
+
+/* ==========================================
+   SIDEBAR
+========================================== */
+
+.sidebar {
+  position: fixed;
+
+  top: 0;
+  left: 0;
+
+  width: 250px;
+  height: 100vh;
+
+  background: var(--sidebar);
+
+  color: white;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 22px 14px;
+
+  border-right: 1px solid var(--border);
+
+  z-index: 1000;
+}
+
+/* ==========================================
+   LOGO
+========================================== */
+
+.logo {
+  padding: 8px 14px 25px;
+
+  border-bottom: 1px solid var(--border);
+}
+
+.logo h2 {
+  font-size: 25px;
+
+  font-weight: 700;
+
+  letter-spacing: -0.5px;
+
+  color: #ffffff;
+}
+
+.logo span {
+  display: block;
+
+  color: var(--text-secondary);
+
+  font-size: 11px;
+
+  margin-top: 3px;
+
+  letter-spacing: 0.5px;
+}
+
+/* ==========================================
+   NAVIGATION
+========================================== */
+
+.navigation {
+  margin-top: 20px;
+
+  flex: 1;
+
+  overflow-y: auto;
+}
+
+.nav-section {
+  margin-top: 22px;
+}
+
+.nav-section:first-child {
+  margin-top: 0;
+}
+
+.nav-section p {
+  color: var(--text-light);
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  text-transform: uppercase;
+
+  letter-spacing: 1px;
+
+  margin: 0 12px 8px;
+}
+
+/* ==========================================
+   NAV LINKS
+========================================== */
+
+.nav-link {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+  width: 90%;
+
+  text-decoration: none;
+
+  color: #aeb7c4;
+
+  padding: 11px;
+
+  margin-bottom: 4px;
+
+  border-radius: 9px;
+
+  font-size: 13px;
+
+  transition: all var(--transition);
+}
+
+.nav-link span {
+  width: 20px;
+
+  text-align: center;
+
+  font-size: 12px;
+}
+
+.nav-link:hover {
+  background: var(--sidebar-hover);
+
+  color: #ffffff;
+
+  transform: translateX(2px);
+}
+
+.nav-link.active {
+  background: var(--sidebar-active);
+
+  color: #111827;
+
+  font-weight: 600;
+
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.08);
+}
+
+/* ==========================================
+   SIDEBAR BOTTOM
+========================================== */
+
+.sidebar-bottom {
+  border-top: 1px solid var(--border);
+
+  padding-top: 15px;
+}
+
+.logout {
+  color: #fca5a5;
+}
+
+.logout:hover {
+  background: var(--danger-light);
+
+  color: var(--primary-light);
+}
+/* ==========================================
+   SIDEBAR SCROLLBAR
+========================================== */
+
+.navigation::-webkit-scrollbar {
+  width: 5px;
+}
+
+.navigation::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.navigation::-webkit-scrollbar-thumb {
+  background: #2a313b;
+  border-radius: 10px;
+}
+
+.navigation::-webkit-scrollbar-thumb:hover {
+  background: #3a424e;
 }

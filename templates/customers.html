@@ -1,0 +1,290 @@
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Customers | SIMS</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/customers.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+
+  <body>
+    <!-- ==================== SIDEBAR ==================== -->
+
+    <aside class="sidebar" id="sidebar">
+      <div class="logo">
+        <h2>SIMS</h2>
+        <span>Smart Inventory</span>
+      </div>
+
+      <nav class="navigation">
+        <a href="/dashboard" class="nav-link">
+          <span>▣</span>
+          Dashboard
+        </a>
+
+        <div class="nav-section">
+          <p>Inventory</p>
+
+          <a href="/products" class="nav-link">
+            <span>▦</span>
+            Products
+          </a>
+
+          <a href="/categories" class="nav-link">
+            <span>▤</span>
+            Categories
+          </a>
+
+          <a href="/stock" class="nav-link">
+            <span>◈</span>
+            Stock
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <p>Sales</p>
+
+          <a href="/sales" class="nav-link">
+            <span>＋</span>
+            New Sale
+          </a>
+
+          <a href="/sales-history" class="nav-link">
+            <span>▤</span>
+            Sales History
+          </a>
+        </div>
+
+        <!-- Active Customers -->
+
+        <a href="/customers" class="nav-link active">
+          <span>♙</span>
+          Customers
+        </a>
+
+        <a href="/settings" class="nav-link">
+          <span>⚙</span>
+          Settings
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <a href="/logout" class="nav-link logout">
+          <span>↪</span>
+          Logout
+        </a>
+      </div>
+    </aside>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+
+    <main class="main-content">
+      <!-- ==================== TOPBAR ==================== -->
+
+      <header class="topbar">
+        <button class="menu-btn" id="menuBtn">☰</button>
+
+        <div class="search-box">
+          <input type="text" placeholder="Search..." />
+        </div>
+
+        <div class="topbar-right">
+          <button class="notification-btn">♧</button>
+
+          <div class="user-area">
+            <div class="avatar">{{ full_name[0].upper() }}</div>
+
+            <div class="user-info">
+              <strong> {{ full_name }} </strong>
+
+              <span> Administrator </span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- ==================== CUSTOMERS CONTENT ==================== -->
+
+      <section class="customers-page">
+        <!-- PAGE HEADER -->
+
+        <div class="page-header">
+          <div>
+            <p class="page-label">Management</p>
+
+            <h1>Customers</h1>
+
+            <p>Manage your customers and their information.</p>
+          </div>
+
+          <button class="add-customer-btn" onclick="openAddCustomerModal()">
+            <span>＋</span>
+            Add Customer
+          </button>
+        </div>
+
+        <!-- ==================== SEARCH CARD ==================== -->
+
+        <div class="search-section">
+          <div class="search-box-custom">
+            <label for="searchCustomer"> Search Customers </label>
+
+            <input
+              type="text"
+              id="searchCustomer"
+              placeholder="Search by name, phone or email..."
+            />
+          </div>
+        </div>
+
+        <!-- ==================== CUSTOMER TABLE ==================== -->
+
+        <div class="customers-section">
+          <div class="section-header">
+            <div>
+              <h2>Customer List</h2>
+
+              <p>All registered customers</p>
+            </div>
+
+            <span id="customerCount" class="customer-count"> 0 Customers </span>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+
+                  <th>Customer</th>
+
+                  <th>Phone</th>
+
+                  <th>Email</th>
+
+                  <th>Address</th>
+
+                  <th>Created</th>
+
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
+              <tbody id="customerTableBody">
+                <tr>
+                  <td colspan="7" class="loading">Loading customers...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ==================== CUSTOMER MODAL ==================== -->
+
+    <div id="customerModal" class="modal">
+      <div class="modal-content">
+        <!-- MODAL HEADER -->
+
+        <div class="modal-header">
+          <div>
+            <p class="modal-label">Customer</p>
+
+            <h2 id="customerModalTitle">Add Customer</h2>
+          </div>
+
+          <button class="close-btn" onclick="closeCustomerModal()">
+            &times;
+          </button>
+        </div>
+
+        <!-- CUSTOMER FORM -->
+
+        <form id="customerForm">
+          <input type="hidden" id="customerId" />
+
+          <!-- NAME -->
+
+          <div class="form-group">
+            <label for="customerName"> Customer Name </label>
+
+            <input
+              type="text"
+              id="customerName"
+              placeholder="Enter customer name"
+              required
+            />
+          </div>
+
+          <!-- PHONE -->
+
+          <div class="form-group">
+            <label for="customerPhone"> Phone </label>
+
+            <input
+              type="text"
+              id="customerPhone"
+              placeholder="Enter phone number"
+            />
+          </div>
+
+          <!-- EMAIL -->
+
+          <div class="form-group">
+            <label for="customerEmail"> Email </label>
+
+            <input
+              type="email"
+              id="customerEmail"
+              placeholder="Enter email address"
+            />
+          </div>
+
+          <!-- ADDRESS -->
+
+          <div class="form-group">
+            <label for="customerAddress"> Address </label>
+
+            <textarea
+              id="customerAddress"
+              rows="4"
+              placeholder="Enter customer address"
+            ></textarea>
+          </div>
+
+          <!-- FORM ACTIONS -->
+
+          <div class="form-actions">
+            <button
+              type="button"
+              class="cancel-btn"
+              onclick="closeCustomerModal()"
+            >
+              Cancel
+            </button>
+
+            <button type="submit" class="save-btn" id="saveCustomerBtn">
+              Save Customer
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ==================== JAVASCRIPT ==================== -->
+
+    <script src="{{ url_for('static', filename='js/customers.js') }}"></script>
+  </body>
+</html>
+```

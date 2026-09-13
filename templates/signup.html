@@ -12,6 +12,7 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/login.css') }}"
     />
+  
   </head>
   <style>
     .password_req {
@@ -135,6 +136,10 @@
           errorMessage.style.color = "green";
           errorMessage.innerHTML = data.message;
           form.reset();
+
+          setTimeout(function () {
+            window.location.href = "/login";
+          }, 1000);
         } else {
           errorMessage.style.color = "red";
           errorMessage.innerHTML = data.message;

@@ -1,12 +1,4 @@
-:root {
-  --color-1: #f29191;
-  --color-2: #b1e5e6;
-  --color-3: #4a4a4a;
-  --color-white: #ffff;
-  --color-black: #000;
-  --font-primary: "Playfair Display", serif;
-  --font-secondary: "Montserrat", sans-serif;
-}
+
 
 body {
   overflow: hidden;

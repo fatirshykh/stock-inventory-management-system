@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Sales History - SIMS</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/sales-history.css') }}"
+    />
+  </head>
+
+  <body>
+    <!-- ===============================
+         SIDEBAR
+    ================================ -->
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="logo">
+        <h2>SIMS</h2>
+        <span>Smart Inventory</span>
+      </div>
+
+      <nav class="navigation">
+        <a href="/dashboard" class="nav-link">
+          <span>▣</span>
+          Dashboard
+        </a>
+
+        <div class="nav-section">
+          <p>Inventory</p>
+
+          <a href="/products" class="nav-link">
+            <span>▦</span>
+            Products
+          </a>
+
+          <a href="/categories" class="nav-link">
+            <span>▤</span>
+            Categories
+          </a>
+
+          <a href="/stock" class="nav-link">
+            <span>◈</span>
+            Stock
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <p>Sales</p>
+
+          <a href="/sales" class="nav-link">
+            <span>＋</span>
+            New Sale
+          </a>
+
+          <a href="/sales-history" class="nav-link  active">
+            <span>▤</span>
+            Sales History
+          </a>
+        </div>
+
+        <a href="/customers" class="nav-link">
+          <span>♙</span>
+          Customers
+        </a>
+
+        <a href="/settings" class="nav-link">
+          <span>⚙</span>
+          Settings
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <a href="/logout" class="nav-link logout">
+          <span>↪</span>
+          Logout
+        </a>
+      </div>
+    </aside>
+
+    <!-- ===============================
+         MAIN CONTENT
+    ================================ -->
+
+    <main class="main-content">
+      <!-- TOPBAR -->
+
+      <header class="topbar">
+        <button class="menu-btn" id="menuBtn" type="button">☰</button>
+
+        <div class="topbar-search">
+          <input type="text" id="searchInput" placeholder="Search sales..." />
+        </div>
+
+        <div class="topbar-user">
+          <div class="avatar">{{ full_name[0].upper() }}</div>
+
+          <div class="user-info">
+            <strong> {{ full_name }} </strong>
+
+            <span> Administrator </span>
+          </div>
+        </div>
+      </header>
+
+      <!-- PAGE CONTENT -->
+
+      <section class="page-content">
+        <div class="page-header">
+          <div>
+            <h1>Sales History</h1>
+
+            <p>View and manage completed sales.</p>
+          </div>
+
+          <a href="/sales" class="new-sale-btn"> + New Sale </a>
+        </div>
+
+        <!-- ===============================
+                 SALES STATS
+            ================================ -->
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span> Total Sales </span>
+
+            <strong id="totalSales"> 0 </strong>
+          </div>
+
+          <div class="stat-card">
+            <span> Total Revenue </span>
+
+            <strong id="totalRevenue"> 0.00 </strong>
+          </div>
+
+          <div class="stat-card">
+            <span> Total Discount </span>
+
+            <strong id="totalDiscount"> 0.00 </strong>
+          </div>
+        </div>
+
+        <!-- ===============================
+                 SALES TABLE
+            ================================ -->
+
+        <div class="table-card">
+          <div class="table-header">
+            <h2>Completed Sales</h2>
+
+            <span id="salesCount"> 0 sales </span>
+          </div>
+
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Sale ID</th>
+
+                  <th>Customer</th>
+
+                  <th>Date</th>
+
+                  <th>Subtotal</th>
+
+                  <th>Discount</th>
+
+                  <th>Final Amount</th>
+
+                  <th>Action</th>
+                </tr>
+              </thead>
+
+              <tbody id="salesTableBody">
+                <tr>
+                  <td colspan="7" class="loading">Loading sales...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ===============================
+         SALE DETAILS MODAL
+    ================================ -->
+
+    <div class="modal" id="saleDetailsModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div>
+            <h2>Sale Details</h2>
+
+            <p id="saleDetailsInfo">Sale</p>
+          </div>
+
+          <button type="button" class="close-btn" id="closeModalBtn">×</button>
+        </div>
+
+        <div class="sale-info-grid">
+          <div>
+            <span> Customer </span>
+
+            <strong id="detailCustomer"> - </strong>
+          </div>
+
+          <div>
+            <span> Date </span>
+
+            <strong id="detailDate"> - </strong>
+          </div>
+
+          <div>
+            <span> Subtotal </span>
+
+            <strong id="detailSubtotal"> 0.00 </strong>
+          </div>
+
+          <div>
+            <span> Discount </span>
+
+            <strong id="detailDiscount"> 0.00 </strong>
+          </div>
+
+          <div>
+            <span> Final Amount </span>
+
+            <strong id="detailFinalAmount"> 0.00 </strong>
+          </div>
+        </div>
+
+        <div class="details-table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+
+                <th>SKU</th>
+
+                <th>Quantity</th>
+
+                <th>Unit Price</th>
+
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+
+            <tbody id="saleDetailsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/sales-history.js') }}"></script>
+  </body>
+</html>

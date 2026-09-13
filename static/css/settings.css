@@ -1,0 +1,571 @@
+/* ========================================
+   SIMS - SETTINGS CSS
+   Matches Dashboard Design
+======================================== */
+
+/* ========================================
+   MAIN CONTENT
+======================================== */
+
+.main-content {
+  margin-left: 250px;
+
+  min-height: 100vh;
+
+  background: var(--background);
+}
+
+/* ========================================
+   TOPBAR
+======================================== */
+
+.topbar {
+  height: 72px;
+
+  background: rgba(11, 15, 20, 0.85);
+
+  border-bottom: 1px solid var(--border);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 30px;
+
+  gap: 20px;
+
+  position: sticky;
+  top: 0;
+
+  z-index: 500;
+
+  backdrop-filter: blur(12px);
+}
+
+/* TOPBAR LEFT */
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+
+  gap: 15px;
+}
+
+/* SEARCH */
+
+.search-box {
+  width: 280px;
+
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 0 12px;
+
+  background: var(--card);
+
+  border: 1px solid var(--border);
+
+  border-radius: 9px;
+}
+
+.search-box span {
+  font-size: 14px;
+
+  color: var(--text-secondary);
+}
+
+.search-box input {
+  width: 100%;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  color: var(--text);
+
+  font-size: 13px;
+}
+
+.search-box input::placeholder {
+  color: var(--text-light);
+}
+
+/* TOPBAR RIGHT */
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+
+  gap: 18px;
+}
+
+/* NOTIFICATION */
+
+.notification-btn {
+  width: 38px;
+  height: 38px;
+
+  border: 1px solid var(--border);
+
+  background: var(--card);
+
+  color: var(--text-secondary);
+
+  border-radius: 9px;
+
+  cursor: pointer;
+
+  font-size: 16px;
+
+  transition: var(--transition);
+}
+
+.notification-btn:hover {
+  background: var(--card-hover);
+
+  color: var(--text);
+}
+
+/* USER AREA */
+
+.user-area {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+/* AVATAR */
+
+.avatar {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #ffffff;
+
+  color: #0b0f14;
+
+  border-radius: 10px;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* USER INFO */
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-info strong {
+  font-size: 13px;
+
+  color: var(--text);
+}
+
+.user-info span {
+  font-size: 10px;
+
+  color: var(--text-secondary);
+}
+
+/* ========================================
+   MOBILE MENU
+======================================== */
+
+.menu-btn {
+  width: 38px;
+  height: 38px;
+
+  border: 1px solid var(--border);
+
+  background: var(--card);
+
+  color: var(--text);
+
+  border-radius: 9px;
+
+  font-size: 20px;
+
+  cursor: pointer;
+
+  display: none;
+}
+
+/* ========================================
+   SETTINGS PAGE
+======================================== */
+
+.settings {
+  padding: 30px;
+}
+
+/* ========================================
+   PAGE HEADER
+======================================== */
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 25px;
+}
+
+.page-label {
+  font-size: 10px;
+
+  font-weight: 700;
+
+  letter-spacing: 1px;
+
+  color: var(--primary);
+
+  margin-bottom: 4px;
+}
+
+.page-header h1 {
+  font-size: 28px;
+
+  font-weight: 700;
+
+  color: var(--text);
+}
+
+.page-header p:last-child {
+  margin-top: 5px;
+
+  color: var(--text-secondary);
+
+  font-size: 13px;
+}
+
+/* ========================================
+   SETTINGS GRID
+======================================== */
+
+.settings-grid {
+  display: grid;
+
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 20px;
+}
+
+/* ========================================
+   SETTINGS CARD
+======================================== */
+
+.settings-card {
+  background: var(--card);
+
+  border: 1px solid var(--border);
+
+  border-radius: var(--radius);
+
+  padding: 22px;
+
+  box-shadow: var(--shadow);
+
+  transition: var(--transition);
+}
+
+.settings-card:hover {
+  border-color: var(--border-light);
+}
+
+/* ========================================
+   CARD HEADER
+======================================== */
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 20px;
+}
+
+.card-header h3 {
+  font-size: 16px;
+
+  font-weight: 600;
+
+  color: var(--text);
+}
+
+.card-header p {
+  margin-top: 4px;
+
+  font-size: 12px;
+
+  color: var(--text-secondary);
+}
+
+/* ========================================
+   FORM
+======================================== */
+
+.form-grid {
+  display: grid;
+
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 7px;
+
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  font-size: 12px;
+
+  font-weight: 600;
+
+  color: var(--text-secondary);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+
+  padding: 11px 12px;
+
+  background: var(--background-secondary);
+
+  border: 1px solid var(--border);
+
+  border-radius: var(--radius-small);
+
+  outline: none;
+
+  color: var(--text);
+
+  font-family: Arial, sans-serif;
+
+  font-size: 13px;
+
+  transition: var(--transition);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: var(--text-light);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--primary);
+
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.form-group select {
+  cursor: pointer;
+}
+
+.form-group textarea {
+  resize: vertical;
+
+  min-height: 100px;
+}
+
+/* FULL WIDTH */
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+/* ========================================
+   PRIMARY BUTTON
+======================================== */
+
+.primary-btn {
+  border: none;
+
+  padding: 11px 18px;
+
+  background: var(--primary);
+
+  color: #ffffff;
+
+  border-radius: 9px;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: var(--transition);
+}
+
+.primary-btn:hover {
+  background: var(--primary-hover);
+
+  transform: translateY(-1px);
+}
+
+.primary-btn:active {
+  transform: translateY(0);
+}
+
+/* ========================================
+   SYSTEM INFORMATION
+======================================== */
+
+.system-info {
+  display: flex;
+
+  flex-direction: column;
+}
+
+.info-row {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 13px 0;
+
+  border-bottom: 1px solid var(--border-light);
+}
+
+.info-row:first-child {
+  padding-top: 0;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+
+  padding-bottom: 0;
+}
+
+.info-row span {
+  font-size: 12px;
+
+  color: var(--text-secondary);
+}
+
+.info-row strong {
+  font-size: 12px;
+
+  color: var(--text);
+}
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 1100px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========================================
+   TABLET / MOBILE
+======================================== */
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+
+    transition: transform 0.25s ease;
+  }
+
+  .sidebar.show {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+
+  .menu-btn {
+    display: block;
+  }
+
+  .topbar {
+    height: 65px;
+
+    padding: 0 15px;
+  }
+
+  .topbar-left {
+    gap: 10px;
+  }
+
+  .user-info {
+    display: none;
+  }
+
+  .settings {
+    padding: 22px 15px;
+  }
+
+  .page-header h1 {
+    font-size: 24px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .full-width {
+    grid-column: auto;
+  }
+}
+
+/* ========================================
+   SMALL MOBILE
+======================================== */
+
+@media (max-width: 550px) {
+  .settings {
+    padding: 20px 12px;
+  }
+
+  .settings-card {
+    padding: 17px;
+  }
+
+  .search-box {
+    display: none;
+  }
+
+  .topbar-right {
+    gap: 10px;
+  }
+
+  .page-header h1 {
+    font-size: 22px;
+  }
+
+  .page-header p:last-child {
+    font-size: 12px;
+  }
+
+  .primary-btn {
+    width: 100%;
+  }
+}

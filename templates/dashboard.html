@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Dashboard | SIMS</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/dashboard.css') }}"
+    />
+  </head>
+
+  <body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="logo">
+        <h2>SIMS</h2>
+        <span>Smart Inventory</span>
+      </div>
+
+      <nav class="navigation">
+        <a href="/dashboard" class="nav-link active">
+          <span>▣</span>
+          Dashboard
+        </a>
+
+        <div class="nav-section">
+          <p>Inventory</p>
+
+          <a href="/products" class="nav-link">
+            <span>▦</span>
+            Products
+          </a>
+
+          <a href="/categories" class="nav-link">
+            <span>▤</span>
+            Categories
+          </a>
+
+          <a href="/stock" class="nav-link">
+            <span>◈</span>
+            Stock
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <p>Sales</p>
+
+          <a href="/sales" class="nav-link">
+            <span>＋</span>
+            New Sale
+          </a>
+
+          <a href="/sales-history" class="nav-link">
+            <span>▤</span>
+            Sales History
+          </a>
+        </div>
+
+        <a href="/customers" class="nav-link">
+          <span>♙</span>
+          Customers
+        </a>
+
+        <a href="/settings" class="nav-link">
+          <span>⚙</span>
+          Settings
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <a href="/logout" class="nav-link logout">
+          <span>↪</span>
+          Logout
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Top Navbar -->
+      <header class="topbar">
+        <button class="menu-btn" id="menuBtn">☰</button>
+
+        <div class="search-box">
+          <input type="text" placeholder="Search..." id="searchInput" />
+        </div>
+
+        <div class="topbar-right">
+          <button class="notification-btn">♧</button>
+
+          <div class="user-area">
+            <div class="avatar">{{ full_name[0].upper() }}</div>
+
+            <div class="user-info">
+              <strong>{{ full_name }}</strong>
+              <span>Administrator</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Dashboard Content -->
+      <section class="dashboard">
+        <!-- Dashboard Heading -->
+        <div class="page-header">
+          <div>
+            <p class="page-label">Overview</p>
+            <h1>Dashboard</h1>
+            <p>Welcome back! Here's an overview of your inventory and sales.</p>
+          </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📦</div>
+
+            <div class="stat-content">
+              <span>Total Products</span>
+              <h2 id="totalProducts">0</h2>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">▦</div>
+
+            <div class="stat-content">
+              <span>Categories</span>
+              <h2 id="totalCategories">0</h2>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">⚠</div>
+
+            <div class="stat-content">
+              <span>Low Stock</span>
+              <h2 id="lowStock">0</h2>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">💰</div>
+
+            <div class="stat-content">
+              <span>Today's Sales</span>
+              <h2 id="todaySales">0</h2>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+          <!-- Recent Sales -->
+          <div class="dashboard-card recent-sales">
+            <div class="card-header">
+              <div>
+                <h3>Recent Sales</h3>
+                <p>Latest transactions</p>
+              </div>
+
+              <a href="/sales-history" class="view-link"> View All </a>
+            </div>
+
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Invoice</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr>
+                    <td colspan="5" class="empty-state">
+                      No sales available yet.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Low Stock -->
+          <div class="dashboard-card low-stock">
+            <div class="card-header">
+              <div>
+                <h3>Low Stock</h3>
+                <p>Products requiring attention</p>
+              </div>
+
+              <a href="/stock" class="view-link"> View All </a>
+            </div>
+
+            <div class="stock-list">
+              <div class="empty-stock">
+                <div class="empty-icon">📦</div>
+
+                <p>No low-stock products.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="dashboard-card quick-actions">
+          <div class="card-header">
+            <div>
+              <h3>Quick Actions</h3>
+              <p>Common inventory operations</p>
+            </div>
+          </div>
+
+          <div class="actions-grid">
+            <a href="/products" class="action-btn">
+              <span>＋</span>
+              <div>
+                <strong>Add Product</strong>
+                <small>Add a new product</small>
+              </div>
+            </a>
+
+            <a href="/sale" class="action-btn">
+              <span>＋</span>
+              <div>
+                <strong>New Sale</strong>
+                <small>Create a new sale</small>
+              </div>
+            </a>
+
+            <a href="/products" class="action-btn">
+              <span>▦</span>
+              <div>
+                <strong>View Products</strong>
+                <small>Manage inventory</small>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+  </body>
+</html>

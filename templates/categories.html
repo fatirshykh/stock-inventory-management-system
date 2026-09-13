@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Categories - SIMS</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/categories.css') }}"
+    />
+  </head>
+
+  <body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="logo">
+        <h2>SIMS</h2>
+        <span>Smart Inventory</span>
+      </div>
+
+      <nav class="navigation">
+        <a href="/dashboard" class="nav-link">
+          <span>▣</span>
+          Dashboard
+        </a>
+
+        <div class="nav-section">
+          <p>Inventory</p>
+
+          <a href="/products" class="nav-link">
+            <span>▦</span>
+            Products
+          </a>
+
+          <a href="/categories" class="nav-link active">
+            <span>▤</span>
+            Categories
+          </a>
+
+          <a href="/stock" class="nav-link">
+            <span>◈</span>
+            Stock
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <p>Sales</p>
+
+          <a href="/sales" class="nav-link">
+            <span>＋</span>
+            New Sale
+          </a>
+
+          <a href="/sales-history" class="nav-link">
+            <span>▤</span>
+            Sales History
+          </a>
+        </div>
+
+        <a href="/customers" class="nav-link">
+          <span>♙</span>
+          Customers
+        </a>
+
+        <a href="/settings" class="nav-link">
+          <span>⚙</span>
+          Settings
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <a href="/logout" class="nav-link logout">
+          <span>↪</span>
+          Logout
+        </a>
+      </div>
+    </aside>
+    <!-- ================= MAIN CONTENT ================= -->
+
+    <main class="main-content">
+      <!-- TOP BAR -->
+
+      <header class="topbar">
+        <div>
+          <h1>Categories</h1>
+          <p>Manage your business product categories</p>
+        </div>
+
+        <div class="profile">
+          <div class="profile-avatar">F</div>
+
+          <div class="profile-info">
+            <strong>Fatir</strong>
+            <span>Administrator</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- ================= CONTENT ================= -->
+
+      <section class="content">
+        <!-- PAGE HEADER -->
+
+        <div class="page-header">
+          <div>
+            <h2>Category Management</h2>
+            <p>Create, edit and manage your categories.</p>
+          </div>
+
+          <button class="primary-btn" id="openAddModal">
+            <span>+</span>
+            Add Category
+          </button>
+        </div>
+
+        <!-- ================= STAT CARDS ================= -->
+
+        <div class="stats-container">
+          <div class="stat-card">
+            <div class="stat-icon">#</div>
+
+            <div>
+              <span>Total Categories</span>
+              <h3 id="totalCategories">0</h3>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">✓</div>
+
+            <div>
+              <span>Active Categories</span>
+              <h3 id="activeCategories">0</h3>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">×</div>
+
+            <div>
+              <span>Inactive Categories</span>
+              <h3 id="inactiveCategories">0</h3>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= CATEGORY TABLE ================= -->
+
+        <div class="table-card">
+          <div class="table-header">
+            <div>
+              <h3>All Categories</h3>
+              <p>Manage your available product categories.</p>
+            </div>
+
+            <div class="table-actions">
+              <div class="search-box">
+                <span>⌕</span>
+
+                <input
+                  type="text"
+                  id="searchInput"
+                  placeholder="Search categories..."
+                />
+              </div>
+
+              <select id="statusFilter">
+                <option value="all">All Status</option>
+
+                <option value="active">Active</option>
+
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- TABLE -->
+
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Category Name</th>
+                  <th>Description</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
+              <tbody id="categoryTableBody">
+                <!-- JavaScript will insert categories here -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- EMPTY STATE -->
+
+          <div class="empty-state" id="emptyState">
+            <div class="empty-icon">◫</div>
+
+            <h3>No categories found</h3>
+
+            <p>Create your first category to get started.</p>
+
+            <button class="primary-btn" id="emptyAddBtn">+ Add Category</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ================= ADD / EDIT MODAL ================= -->
+
+    <div class="modal-overlay" id="categoryModal">
+      <div class="modal">
+        <div class="modal-header">
+          <div>
+            <h2 id="modalTitle">Add Category</h2>
+            <p id="modalDescription">Create a new product category.</p>
+          </div>
+
+          <button class="close-btn" id="closeModal">×</button>
+        </div>
+
+        <form id="categoryForm">
+          <input type="hidden" id="categoryId" />
+
+          <div class="form-group">
+            <label for="categoryName"> Category Name </label>
+
+            <input
+              type="text"
+              id="categoryName"
+              placeholder="e.g. Electronics"
+              required
+            />
+
+            <small> Category name must be unique. </small>
+          </div>
+
+          <div class="form-group">
+            <label for="categoryDescription"> Description </label>
+
+            <textarea
+              id="categoryDescription"
+              rows="4"
+              placeholder="Enter category description..."
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="categoryStatus"> Status </label>
+
+            <select id="categoryStatus">
+              <option value="active">Active</option>
+
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="secondary-btn" id="cancelBtn">
+              Cancel
+            </button>
+
+            <button type="submit" class="primary-btn" id="saveCategoryBtn">
+              Add Category
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ================= DELETE MODAL ================= -->
+
+    <div class="modal-overlay" id="deleteModal">
+      <div class="modal delete-modal">
+        <div class="delete-icon">!</div>
+
+        <h2>Delete Category?</h2>
+
+        <p>
+          Are you sure you want to delete
+          <strong id="deleteCategoryName"></strong>?
+        </p>
+
+        <p class="warning-text">This action cannot be undone.</p>
+
+        <div class="modal-actions">
+          <button type="button" class="secondary-btn" id="cancelDelete">
+            Cancel
+          </button>
+
+          <button type="button" class="danger-btn" id="confirmDelete">
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= TOAST ================= -->
+
+    <div class="toast" id="toast">
+      <div class="toast-icon">✓</div>
+
+      <div>
+        <strong id="toastTitle"> Success </strong>
+
+        <p id="toastMessage">Operation completed successfully.</p>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/categories.js') }}"></script>
+  </body>
+</html>

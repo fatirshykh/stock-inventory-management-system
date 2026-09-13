@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Settings - SIMS</title>
+
+    <link rel="stylesheet" href="/static/css/settings.css" />
+    <link rel="stylesheet" href="/static/css/style.css" />
+  </head>
+
+  <body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="logo">
+        <h2>SIMS</h2>
+        <span>Smart Inventory</span>
+      </div>
+
+      <nav class="navigation">
+        <a href="/dashboard" class="nav-link">
+          <span>▣</span>
+          Dashboard
+        </a>
+
+        <div class="nav-section">
+          <p>Inventory</p>
+
+          <a href="/products" class="nav-link">
+            <span>▦</span>
+            Products
+          </a>
+
+          <a href="/categories" class="nav-link">
+            <span>▤</span>
+            Categories
+          </a>
+
+          <a href="/stock" class="nav-link">
+            <span>◈</span>
+            Stock
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <p>Sales</p>
+
+          <a href="/sales" class="nav-link">
+            <span>＋</span>
+            New Sale
+          </a>
+
+          <a href="/sales-history" class="nav-link">
+            <span>▤</span>
+            Sales History
+          </a>
+        </div>
+
+        <a href="/customers" class="nav-link">
+          <span>♙</span>
+          Customers
+        </a>
+
+        <a href="/settings" class="nav-link active">
+          <span>⚙</span>
+          Settings
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <a href="/logout" class="nav-link logout">
+          <span>↪</span>
+          Logout
+        </a>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-btn" id="menuBtn">☰</button>
+
+          <div class="search-box">
+            <span>🔍</span>
+            <input type="text" id="searchInput" placeholder="Search..." />
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button class="notification-btn">🔔</button>
+
+          <div class="user-area">
+            <div class="avatar">FS</div>
+
+            <div class="user-info">
+              <strong id="topbarUserName"> {{ full_name }} </strong>
+
+              <span>Administrator</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- SETTINGS -->
+      <section class="settings">
+        <div class="page-header">
+          <div>
+            <p class="page-label">SYSTEM</p>
+
+            <h1>Settings</h1>
+
+            <p>Manage your profile, password and business information.</p>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <!-- PROFILE SETTINGS -->
+          <div class="settings-card">
+            <div class="card-header">
+              <div>
+                <h3>Profile Settings</h3>
+                <p>Update your personal account information.</p>
+              </div>
+            </div>
+
+            <form id="profileForm">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="fullName"> Full Name </label>
+
+                  <input
+                    type="text"
+                    id="fullName"
+                    name="fullName"
+                    placeholder="Enter full name"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="username"> Username </label>
+
+                  <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="Enter username"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="email"> Email </label>
+
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="Enter email"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="phone"> Phone </label>
+
+                  <input
+                    type="text"
+                    id="phone"
+                    name="phone"
+                    placeholder="Enter phone number"
+                  />
+                </div>
+              </div>
+
+              <button type="submit" class="primary-btn">Save Profile</button>
+            </form>
+          </div>
+
+          <!-- CHANGE PASSWORD -->
+          <div class="settings-card">
+            <div class="card-header">
+              <div>
+                <h3>Change Password</h3>
+                <p>Update your account password.</p>
+              </div>
+            </div>
+
+            <form id="passwordForm">
+              <div class="form-group">
+                <label for="currentPassword"> Current Password </label>
+
+                <input
+                  type="password"
+                  id="currentPassword"
+                  name="currentPassword"
+                  placeholder="Enter current password"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="newPassword"> New Password </label>
+
+                <input
+                  type="password"
+                  id="newPassword"
+                  name="newPassword"
+                  placeholder="Enter new password"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="confirmPassword"> Confirm New Password </label>
+
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  placeholder="Confirm new password"
+                  required
+                />
+              </div>
+
+              <button type="submit" class="primary-btn">Change Password</button>
+            </form>
+          </div>
+
+          <!-- BUSINESS INFORMATION -->
+          <div class="settings-card">
+            <div class="card-header">
+              <div>
+                <h3>Business Information</h3>
+                <p>Manage information displayed throughout the system.</p>
+              </div>
+            </div>
+
+            <form id="businessForm">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="businessName"> Business Name </label>
+
+                  <input
+                    type="text"
+                    id="businessName"
+                    name="businessName"
+                    placeholder="Enter business name"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="businessPhone"> Business Phone </label>
+
+                  <input
+                    type="text"
+                    id="businessPhone"
+                    name="businessPhone"
+                    placeholder="Enter business phone"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="businessEmail"> Business Email </label>
+
+                  <input
+                    type="email"
+                    id="businessEmail"
+                    name="businessEmail"
+                    placeholder="Enter business email"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="currency"> Currency </label>
+
+                  <select id="currency" name="currency">
+                    <option value="PKR">PKR - Pakistani Rupee</option>
+                    <option value="USD">USD - US Dollar</option>
+                    <option value="AED">AED - UAE Dirham</option>
+                    <option value="GBP">GBP - British Pound</option>
+                  </select>
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="businessAddress"> Business Address </label>
+
+                  <textarea
+                    id="businessAddress"
+                    name="businessAddress"
+                    rows="4"
+                    placeholder="Enter business address"
+                  ></textarea>
+                </div>
+              </div>
+
+              <button type="submit" class="primary-btn">
+                Save Business Information
+              </button>
+            </form>
+          </div>
+
+          <!-- SYSTEM INFORMATION -->
+          <div class="settings-card">
+            <div class="card-header">
+              <div>
+                <h3>System Information</h3>
+                <p>Information about your SIMS installation.</p>
+              </div>
+            </div>
+
+            <div class="system-info">
+              <div class="info-row">
+                <span>Application</span>
+                <strong>SIMS</strong>
+              </div>
+
+              <div class="info-row">
+                <span>Version</span>
+                <strong>1.0.0</strong>
+              </div>
+
+              <div class="info-row">
+                <span>Backend</span>
+                <strong>Flask</strong>
+              </div>
+
+              <div class="info-row">
+                <span>Database</span>
+                <strong>MySQL</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/static/js/settings.js"></script>
+  </body>
+</html>
