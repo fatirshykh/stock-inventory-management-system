@@ -346,7 +346,6 @@ body {
 
   border-color: var(--danger);
 }
-
 .invoice-image-container {
   flex: 1;
 
@@ -358,23 +357,28 @@ body {
 
   justify-content: center;
 
+  align-items: flex-start;
+
   background: #0b0f14;
 }
-
 .invoice-image {
   display: block;
 
-  width: 100%;
+  width: auto;
 
-  max-width: 520px;
+  max-width: 100%;
 
   height: auto;
+
+  max-height: none;
 
   object-fit: contain;
 
   background: white;
 
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+
+  border-radius: 2px;
 }
 
 .invoice-modal-actions {

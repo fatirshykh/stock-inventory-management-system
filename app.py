@@ -59,7 +59,7 @@ def make_json_safe(value):
 
 
 # =========================
-# GENERATE INVOICE IMAGE
+# GENERATE PROFESSIONAL INVOICE IMAGE
 # =========================
 
 
@@ -74,155 +74,210 @@ def generate_invoice_image(
 ):
 
     bills_folder = os.path.join(app.root_path, "static", "bills")
-
     os.makedirs(bills_folder, exist_ok=True)
 
+    # =========================
+    # IMAGE SETTINGS
+    # =========================
+
     width = 1200
-    margin = 80
+    margin = 70
 
-    item_height = 75
-    base_height = 950
+    header_height = 270
+    table_header_height = 65
+    row_height = 72
 
-    image_height = base_height + (len(items) * item_height)
+    # Calculate dynamic height
+    image_height = header_height + table_header_height + (len(items) * row_height) + 430
 
-    image = Image.new("RGB", (width, image_height), "white")
+    image = Image.new("RGB", (width, image_height), (248, 249, 251))
 
     draw = ImageDraw.Draw(image)
 
-    # ===============================
+    # =========================
     # FONTS
-    # ===============================
+    # =========================
 
     try:
 
         regular_font_path = "C:/Windows/Fonts/arial.ttf"
         bold_font_path = "C:/Windows/Fonts/arialbd.ttf"
 
-        title_font = ImageFont.truetype(bold_font_path, 64)
+        logo_font = ImageFont.truetype(bold_font_path, 58)
 
-        invoice_font = ImageFont.truetype(bold_font_path, 42)
+        invoice_title_font = ImageFont.truetype(bold_font_path, 38)
 
-        heading_font = ImageFont.truetype(bold_font_path, 28)
+        section_font = ImageFont.truetype(bold_font_path, 25)
 
-        regular_font = ImageFont.truetype(regular_font_path, 25)
+        table_header_font = ImageFont.truetype(bold_font_path, 21)
 
-        small_font = ImageFont.truetype(regular_font_path, 22)
+        regular_font = ImageFont.truetype(regular_font_path, 22)
 
-        bold_small_font = ImageFont.truetype(bold_font_path, 22)
+        small_font = ImageFont.truetype(regular_font_path, 19)
+
+        bold_font = ImageFont.truetype(bold_font_path, 22)
 
         total_font = ImageFont.truetype(bold_font_path, 34)
 
+        footer_font = ImageFont.truetype(bold_font_path, 22)
+
     except Exception:
 
-        title_font = ImageFont.load_default()
-        invoice_font = ImageFont.load_default()
-        heading_font = ImageFont.load_default()
+        logo_font = ImageFont.load_default()
+        invoice_title_font = ImageFont.load_default()
+        section_font = ImageFont.load_default()
+        table_header_font = ImageFont.load_default()
         regular_font = ImageFont.load_default()
         small_font = ImageFont.load_default()
-        bold_small_font = ImageFont.load_default()
+        bold_font = ImageFont.load_default()
         total_font = ImageFont.load_default()
+        footer_font = ImageFont.load_default()
 
-    # ===============================
+    # =========================
     # COLORS
-    # ===============================
+    # =========================
 
-    black = (20, 20, 20)
-    dark_gray = (70, 70, 70)
-    gray = (110, 110, 110)
-    light_gray = (235, 235, 235)
-    border_gray = (215, 215, 215)
-    red = (239, 68, 68)
+    background = (248, 249, 251)
+    white = (255, 255, 255)
 
-    # ===============================
+    black = (24, 24, 27)
+    dark_gray = (55, 55, 60)
+    gray = (105, 105, 112)
+    light_gray = (235, 236, 239)
+    border_gray = (218, 220, 224)
+
+    red = (220, 38, 38)
+    light_red = (254, 226, 226)
+
+    green = (22, 163, 74)
+
+    # =========================
+    # MAIN WHITE CARD
+    # =========================
+
+    card_left = margin
+    card_top = 35
+    card_right = width - margin
+    card_bottom = image_height - 35
+
+    draw.rounded_rectangle(
+        (card_left, card_top, card_right, card_bottom),
+        radius=18,
+        fill=white,
+        outline=border_gray,
+        width=2,
+    )
+
+    # =========================
     # HEADER
-    # ===============================
+    # =========================
 
     center_x = width // 2
 
-    text = "SIMS"
+    # SIMS logo
+    logo_text = "SIMS"
 
-    bbox = draw.textbbox((0, 0), text, font=title_font)
+    bbox = draw.textbbox((0, 0), logo_text, font=logo_font)
 
-    text_width = bbox[2] - bbox[0]
+    logo_width = bbox[2] - bbox[0]
 
-    draw.text((center_x - text_width / 2, 60), text, fill=black, font=title_font)
+    draw.text((center_x - logo_width / 2, 70), logo_text, fill=red, font=logo_font)
 
-    text = "Smart Inventory & Sales Management System"
+    # System name
+    system_name = "Smart Inventory & Sales Management System"
 
-    bbox = draw.textbbox((0, 0), text, font=small_font)
+    bbox = draw.textbbox((0, 0), system_name, font=small_font)
 
-    text_width = bbox[2] - bbox[0]
+    system_width = bbox[2] - bbox[0]
 
-    draw.text((center_x - text_width / 2, 135), text, fill=gray, font=small_font)
+    draw.text(
+        (center_x - system_width / 2, 140), system_name, fill=gray, font=small_font
+    )
 
-    draw.rectangle((margin, 185, width - margin, 190), fill=red)
+    # Red separator
+    draw.rounded_rectangle(
+        (card_left + 35, 185, card_right - 35, 190), radius=3, fill=red
+    )
 
-    # ===============================
-    # INVOICE INFORMATION
-    # ===============================
+    # Invoice title
+    draw.text((card_left + 35, 215), "INVOICE", fill=black, font=invoice_title_font)
 
-    y = 230
+    invoice_number = f"#{sale_id}"
 
-    draw.text((margin, y), "INVOICE", fill=black, font=invoice_font)
-
-    invoice_text = f"#{sale_id}"
-
-    bbox = draw.textbbox((0, 0), invoice_text, font=invoice_font)
+    bbox = draw.textbbox((0, 0), invoice_number, font=invoice_title_font)
 
     invoice_width = bbox[2] - bbox[0]
 
     draw.text(
-        (width - margin - invoice_width, y), invoice_text, fill=red, font=invoice_font
+        (card_right - 35 - invoice_width, 215),
+        invoice_number,
+        fill=red,
+        font=invoice_title_font,
     )
 
-    y += 70
+    # =========================
+    # CUSTOMER INFORMATION
+    # =========================
 
-    date_text = datetime.now().strftime("%d %b %Y  |  %I:%M %p")
+    y = 285
 
-    draw.text((margin, y), f"Date: {date_text}", fill=gray, font=small_font)
+    date_text = datetime.now().strftime("%d %b %Y  •  %I:%M %p")
 
-    y += 45
+    draw.text((card_left + 35, y), f"Date: {date_text}", fill=gray, font=small_font)
+
+    customer_display = customer_name or "Walk-in Customer"
+
+    draw.text((card_right - 430, y), "Customer:", fill=gray, font=small_font)
 
     draw.text(
-        (margin, y), f"Customer: {customer_name}", fill=dark_gray, font=regular_font
+        (card_right - 305, y),
+        str(customer_display)[:25],
+        fill=dark_gray,
+        font=bold_font,
     )
 
-    # ===============================
-    # TABLE HEADER
-    # ===============================
+    # =========================
+    # TABLE
+    # =========================
 
-    y += 70
+    table_top = 335
 
-    table_left = margin
-    table_right = width - margin
+    table_left = card_left + 35
+    table_right = card_right - 35
 
-    header_height = 60
-
-    draw.rectangle((table_left, y, table_right, y + header_height), fill=light_gray)
-
+    # Column positions
     product_x = table_left + 20
-    sku_x = 560
-    qty_x = 720
-    price_x = 820
-    subtotal_x = 1000
+    sku_x = table_left + 500
+    qty_x = table_left + 665
+    price_x = table_left + 755
+    total_x = table_left + 925
 
-    draw.text((product_x, y + 18), "Product", fill=black, font=bold_small_font)
+    # Table header
+    draw.rounded_rectangle(
+        (table_left, table_top, table_right, table_top + table_header_height),
+        radius=8,
+        fill=(245, 245, 247),
+    )
 
-    draw.text((sku_x, y + 18), "SKU", fill=black, font=bold_small_font)
+    draw.text(
+        (product_x, table_top + 20), "PRODUCT", fill=black, font=table_header_font
+    )
 
-    draw.text((qty_x, y + 18), "Qty", fill=black, font=bold_small_font)
+    draw.text((sku_x, table_top + 20), "SKU", fill=black, font=table_header_font)
 
-    draw.text((price_x, y + 18), "Price", fill=black, font=bold_small_font)
+    draw.text((qty_x, table_top + 20), "QTY", fill=black, font=table_header_font)
 
-    draw.text((subtotal_x, y + 18), "Total", fill=black, font=bold_small_font)
+    draw.text((price_x, table_top + 20), "PRICE", fill=black, font=table_header_font)
 
-    y += header_height
+    draw.text((total_x, table_top + 20), "TOTAL", fill=black, font=table_header_font)
 
-    # ===============================
+    y = table_top + table_header_height
+
+    # =========================
     # SALE ITEMS
-    # ===============================
+    # =========================
 
-    for item in items:
+    for index, item in enumerate(items):
 
         product_name = str(item.get("product_name", ""))
 
@@ -234,45 +289,53 @@ def generate_invoice_image(
 
         item_subtotal = float(item.get("subtotal", 0))
 
-        draw.line((table_left, y, table_right, y), fill=border_gray, width=2)
+        # Alternate row background
+        if index % 2 == 0:
+            draw.rectangle(
+                (table_left, y, table_right, y + row_height), fill=(252, 252, 253)
+            )
 
-        draw.text(
-            (product_x, y + 22), product_name[:28], fill=dark_gray, font=small_font
+        # Bottom border
+        draw.line(
+            (table_left, y + row_height, table_right, y + row_height),
+            fill=border_gray,
+            width=1,
         )
 
-        draw.text((sku_x, y + 22), sku[:12], fill=dark_gray, font=small_font)
-
-        draw.text((qty_x, y + 22), str(quantity), fill=dark_gray, font=small_font)
-
+        # Product
         draw.text(
-            (price_x, y + 22),
-            f"{currency} {unit_price:,.2f}",
-            fill=dark_gray,
-            font=small_font,
+            (product_x, y + 23), product_name[:32], fill=dark_gray, font=regular_font
         )
 
-        draw.text(
-            (subtotal_x, y + 22),
-            f"{currency} {item_subtotal:,.2f}",
-            fill=dark_gray,
-            font=small_font,
-        )
+        # SKU
+        draw.text((sku_x, y + 23), sku[:14], fill=gray, font=small_font)
 
-        y += item_height
+        # Quantity
+        draw.text((qty_x, y + 23), str(quantity), fill=dark_gray, font=regular_font)
 
-    draw.line((table_left, y, table_right, y), fill=border_gray, width=2)
+        # Unit price
+        price_text = f"{currency} {unit_price:,.0f}"
 
-    # ===============================
-    # TOTALS
-    # ===============================
+        draw.text((price_x, y + 23), price_text, fill=dark_gray, font=small_font)
 
-    y += 50
+        # Total
+        total_text = f"{currency} {item_subtotal:,.0f}"
 
-    totals_label_x = 720
+        draw.text((total_x, y + 23), total_text, fill=dark_gray, font=small_font)
+
+        y += row_height
+
+    # =========================
+    # TOTALS SECTION
+    # =========================
+
+    y += 35
+
+    totals_left = table_left + 590
+    totals_right = table_right
 
     # Subtotal
-
-    draw.text((totals_label_x, y), "Subtotal", fill=dark_gray, font=regular_font)
+    draw.text((totals_left, y), "Subtotal", fill=gray, font=regular_font)
 
     subtotal_text = f"{currency} {float(subtotal):,.2f}"
 
@@ -281,15 +344,14 @@ def generate_invoice_image(
     subtotal_width = bbox[2] - bbox[0]
 
     draw.text(
-        (width - margin - subtotal_width, y),
+        (totals_right - subtotal_width, y),
         subtotal_text,
         fill=dark_gray,
         font=regular_font,
     )
 
-    y += 50
-
     # Discount
+    y += 48
 
     discount_amount = float(discount)
 
@@ -297,12 +359,9 @@ def generate_invoice_image(
         (discount_amount / float(subtotal)) * 100 if float(subtotal) > 0 else 0
     )
 
-    draw.text(
-        (totals_label_x, y),
-        f"Discount ({discount_percentage:.2f}%)",
-        fill=dark_gray,
-        font=regular_font,
-    )
+    discount_label = f"Discount ({discount_percentage:.2f}%)"
+
+    draw.text((totals_left, y), discount_label, fill=gray, font=regular_font)
 
     discount_text = f"- {currency} {discount_amount:,.2f}"
 
@@ -311,19 +370,27 @@ def generate_invoice_image(
     discount_width = bbox[2] - bbox[0]
 
     draw.text(
-        (width - margin - discount_width, y),
-        discount_text,
-        fill=dark_gray,
-        font=regular_font,
+        (totals_right - discount_width, y), discount_text, fill=green, font=regular_font
     )
 
-    y += 65
+    # Total separator
+    y += 55
 
-    draw.line((totals_label_x, y, width - margin, y), fill=black, width=3)
+    draw.line((totals_left, y, totals_right, y), fill=border_gray, width=2)
 
-    y += 30
+    # Final total background
+    y += 20
 
-    draw.text((totals_label_x, y), "TOTAL", fill=black, font=total_font)
+    total_box_top = y
+    total_box_bottom = y + 70
+
+    draw.rounded_rectangle(
+        (totals_left - 20, total_box_top, totals_right, total_box_bottom),
+        radius=10,
+        fill=light_red,
+    )
+
+    draw.text((totals_left, y + 17), "TOTAL", fill=black, font=total_font)
 
     final_text = f"{currency} {float(final_amount):,.2f}"
 
@@ -331,25 +398,28 @@ def generate_invoice_image(
 
     final_width = bbox[2] - bbox[0]
 
-    draw.text((width - margin - final_width, y), final_text, fill=red, font=total_font)
+    draw.text(
+        (totals_right - final_width - 20, y + 17), final_text, fill=red, font=total_font
+    )
 
-    # ===============================
+    # =========================
     # FOOTER
-    # ===============================
+    # =========================
 
-    y += 120
+    footer_y = total_box_bottom + 55
 
     footer_text = "Thank you for your business!"
 
-    bbox = draw.textbbox((0, 0), footer_text, font=heading_font)
+    bbox = draw.textbbox((0, 0), footer_text, font=footer_font)
 
     footer_width = bbox[2] - bbox[0]
 
     draw.text(
-        (center_x - footer_width / 2, y), footer_text, fill=black, font=heading_font
+        (center_x - footer_width / 2, footer_y),
+        footer_text,
+        fill=black,
+        font=footer_font,
     )
-
-    y += 45
 
     footer_subtitle = "Powered by SIMS"
 
@@ -358,18 +428,21 @@ def generate_invoice_image(
     footer_width = bbox[2] - bbox[0]
 
     draw.text(
-        (center_x - footer_width / 2, y), footer_subtitle, fill=gray, font=small_font
+        (center_x - footer_width / 2, footer_y + 38),
+        footer_subtitle,
+        fill=gray,
+        font=small_font,
     )
 
-    # ===============================
+    # =========================
     # SAVE IMAGE
-    # ===============================
+    # =========================
 
     invoice_filename = f"invoice_{sale_id}.png"
 
     invoice_path = os.path.join(bills_folder, invoice_filename)
 
-    image.save(invoice_path, "PNG", optimize=False)
+    image.save(invoice_path, "PNG", optimize=True)
 
     return f"/static/bills/{invoice_filename}"
 
