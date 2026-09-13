@@ -1,97 +1,566 @@
-:root {
-  --color-1: #f29191;
-  --color-2: #b1e5e6;
-  --color-3: #4a4a4a;
-  --color-white: #ffff;
-  --color-black: #000;
-  --font-primary: "Playfair Display", serif;
-  --font-secondary: "Montserrat", sans-serif;
-}
+/* ==========================================
+   SIMS LOGIN PAGE
+   MODERN DARK ADMIN DESIGN
+========================================== */
+
+
+/* ==========================================
+   PAGE
+========================================== */
 
 body {
-  overflow: hidden;
-  background-color: var(--color-2);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  margin: 0;
+  padding: 0;
+
+  min-height: 100vh;
   width: 100%;
-}
-.login-container {
-  padding: 15px;
-  background-color: var(--color-white);
-  border-radius: 12px;
-  text-align: center;
-}
-.login-container h2 {
+
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  position: relative;
+
+  background:
+    radial-gradient(
+      circle at 15% 20%,
+      rgba(239, 68, 68, 0.10),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 85% 80%,
+      rgba(239, 68, 68, 0.07),
+      transparent 30%
+    ),
+    var(--background);
+
+  color: var(--text);
+
   font-family: var(--font-primary);
 }
-.login-container span {
-  font-family: var(--font-secondary);
-  font-size: 12px;
+
+
+/* ==========================================
+   BACKGROUND GRID
+========================================== */
+
+body::before {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  pointer-events: none;
+
+  background-image:
+    linear-gradient(
+      rgba(255, 255, 255, 0.025) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.025) 1px,
+      transparent 1px
+    );
+
+  background-size: 45px 45px;
+
+  mask-image: linear-gradient(
+    to bottom,
+    black,
+    transparent
+  );
 }
+
+
+/* ==========================================
+   LOGIN CONTAINER
+========================================== */
+
+.login-container {
+  position: relative;
+
+  z-index: 2;
+
+  width: 390px;
+
+  padding: 38px 38px 32px;
+
+  background: rgba(21, 26, 33, 0.92);
+
+  border: 1px solid var(--border);
+
+  border-radius: 20px;
+
+  text-align: center;
+
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.015);
+
+  backdrop-filter: blur(18px);
+
+  animation: loginAppear 0.45s ease forwards;
+}
+
+
+/* ==========================================
+   TOP RED ACCENT
+========================================== */
+
+.login-container::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 50%;
+
+  width: 90px;
+  height: 3px;
+
+  transform: translateX(-50%);
+
+  background: var(--primary);
+
+  border-radius: 0 0 10px 10px;
+
+  box-shadow:
+    0 0 15px rgba(239, 68, 68, 0.5);
+}
+
+
+/* ==========================================
+   LOGO / BRAND AREA
+========================================== */
+
+.login-container h2 {
+  margin: 5px 0 8px;
+
+  color: var(--text);
+
+  font-family: var(--font-primary);
+
+  font-size: 28px;
+
+  font-weight: 700;
+
+  letter-spacing: -0.8px;
+}
+
+
+/* ==========================================
+   SUBTITLE
+========================================== */
+
+.login-container > span {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: var(--text-secondary);
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+
+/* ==========================================
+   FORM
+========================================== */
+
 .login-container form {
-  padding: 10px;
-  padding-top: 30px;
-  width: 300px;
+  width: 100%;
+
+  padding: 25px 0 0;
 }
+
+
+/* ==========================================
+   INPUT CONTAINER
+========================================== */
+
 .login-container form .input {
   display: flex;
+
   flex-direction: column;
-  gap: 12px;
+
+  gap: 18px;
+
+  width: 100%;
 }
+
+
+/* ==========================================
+   INPUT FIELDS
+========================================== */
+
 .login-container form input {
-  padding: 10px 12px;
-  border: none;
+  width: 100%;
+
+  height: 48px;
+
+  padding: 0 14px;
+
   outline: none;
 
-  border-bottom: 2px solid var(--color-3);
-  width: 270px;
+  border: 1px solid var(--border);
+
+  border-radius: var(--radius-small);
+
+  background: var(--background-secondary);
+
+  color: var(--text);
+
+  font-family: var(--font-primary);
+
+  font-size: 13px;
+
+  transition:
+    border-color var(--transition),
+    background var(--transition),
+    box-shadow var(--transition);
 }
+
+
+/* ==========================================
+   PLACEHOLDER
+========================================== */
+
+.login-container form input::placeholder {
+  color: var(--text-light);
+}
+
+
+/* ==========================================
+   INPUT HOVER
+========================================== */
+
+.login-container form input:hover {
+  border-color: #343c47;
+}
+
+
+/* ==========================================
+   INPUT FOCUS
+========================================== */
+
 .login-container form input:focus {
-  border-bottom: 2px solid var(--color-1);
+  background: #141a21;
+
+  border-color: var(--primary);
+
+  box-shadow:
+    0 0 0 3px rgba(239, 68, 68, 0.10);
 }
+
+
+/* ==========================================
+   PASSWORD FIELD
+========================================== */
+
 .login-container form .password {
-  display: flex;
   position: relative;
+
+  display: flex;
+
+  width: 100%;
 }
+
+
+/* ==========================================
+   PASSWORD INPUT
+========================================== */
+
+.login-container form .password input {
+  padding-right: 45px;
+}
+
+
+/* ==========================================
+   PASSWORD ICON
+========================================== */
+
 .login-container form .password i {
-  background-color: transparent;
-  font-size: 15px;
-  cursor: pointer;
   position: absolute;
-  right: 10px;
-  bottom: 12px;
+
+  right: 14px;
+  bottom: 16px;
+
+  z-index: 2;
+
+  color: var(--text-light);
+
+  background: transparent;
+
+  font-size: 15px;
+
+  cursor: pointer;
+
+  transition:
+    color var(--transition),
+    transform var(--transition);
 }
+
+
+/* ==========================================
+   PASSWORD ICON HOVER
+========================================== */
+
+.login-container form .password i:hover {
+  color: var(--primary);
+
+  transform: scale(1.08);
+}
+
+
+/* ==========================================
+   CHECKBOX AREA
+========================================== */
+
 .login-container form .checkbox {
   display: flex;
-  gap: 5px;
-  padding: 12px 0;
+
   align-items: center;
+
+  gap: 8px;
+
+  width: 100%;
+
+  padding: 16px 0 8px;
+
+  color: var(--text-secondary);
+
+  font-size: 12px;
+
+  text-align: left;
 }
+
+
+/* ==========================================
+   CHECKBOX
+========================================== */
+
 .login-container form .checkbox input {
-  height: 12px;
-  width: 12px;
+  width: 15px;
+  height: 15px;
+
+  margin: 0;
+
+  padding: 0;
+
+  border: 1px solid var(--border);
+
+  border-radius: 4px;
+
+  accent-color: var(--primary);
+
+  cursor: pointer;
 }
+
+
+/* ==========================================
+   LOGIN BUTTON
+========================================== */
+
 .login-container form button {
-  padding: 8px 30px;
-  background-color: var(--color-1);
+  width: 100%;
+
+  height: 48px;
+
+  margin-top: 14px;
+
+  padding: 0 20px;
+
   border: none;
-  font-family: var(--font-secondary);
-  font-weight: 500;
-  border-radius: 6px;
+
+  border-radius: var(--radius-small);
+
+  background: var(--primary);
+
+  color: #ffffff;
+
+  font-family: var(--font-primary);
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.3px;
+
   text-transform: uppercase;
-  filter: drop-shadow(2px 2px 2px var(--color-3));
-  transition: all 0.5s ease-in-out;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 20px rgba(239, 68, 68, 0.18);
+
+  transition:
+    background var(--transition),
+    transform var(--transition),
+    box-shadow var(--transition);
 }
+
+
+/* ==========================================
+   BUTTON HOVER
+========================================== */
+
+.login-container form button:hover {
+  background: var(--primary-hover);
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 25px rgba(239, 68, 68, 0.25);
+}
+
+
+/* ==========================================
+   BUTTON ACTIVE
+========================================== */
+
 .login-container form button:active {
-  filter: drop-shadow(0px 0px 0px var(--color-3));
-  background-color: #f08484;
+  transform: translateY(0);
+
+  box-shadow:
+    0 5px 12px rgba(239, 68, 68, 0.15);
 }
+
+
+/* ==========================================
+   FORM MESSAGE / FOOTER
+========================================== */
+
 .login-container form p {
-  padding: 6px 0;
-  margin-top: 20px;
+  margin: 20px 0 0;
+
+  padding: 0;
+
+  color: var(--text-light);
+
+  font-size: 11px;
+
+  line-height: 1.6;
 }
+
+
+/* ==========================================
+   ERROR MESSAGE
+========================================== */
+
 .login-container #errorMessage {
-  color: red;
+  margin-top: 12px;
+
+  padding: 10px 12px;
+
+  border: 1px solid rgba(239, 68, 68, 0.20);
+
+  border-radius: 8px;
+
+  background: rgba(239, 68, 68, 0.07);
+
+  color: #f87171;
+
+  font-size: 12px;
+
+  line-height: 1.5;
+}
+
+
+/* ==========================================
+   FOCUS ACCESSIBILITY
+========================================== */
+
+.login-container form button:focus-visible,
+.login-container form input:focus-visible,
+.login-container form .password i:focus-visible {
+  outline: 2px solid var(--primary-light);
+
+  outline-offset: 2px;
+}
+
+
+/* ==========================================
+   ANIMATION
+========================================== */
+
+@keyframes loginAppear {
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(15px)
+      scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 600px) {
+
+  body {
+    padding: 20px;
+
+    overflow-y: auto;
+  }
+
+  .login-container {
+    width: 100%;
+
+    max-width: 390px;
+
+    padding: 32px 24px 28px;
+
+    border-radius: 16px;
+  }
+
+  .login-container h2 {
+    font-size: 25px;
+  }
+
+  .login-container form {
+    width: 100%;
+  }
+
+  .login-container form input {
+    width: 100%;
+  }
+
+}
+
+
+/* ==========================================
+   SMALL MOBILE
+========================================== */
+
+@media (max-width: 380px) {
+
+  body {
+    padding: 12px;
+  }
+
+  .login-container {
+    padding: 28px 18px 24px;
+  }
+
+  .login-container h2 {
+    font-size: 23px;
+  }
+
 }

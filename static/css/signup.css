@@ -1,0 +1,654 @@
+/* =========================================================
+   SIMS — SIGN UP PAGE
+   PREMIUM AUTHENTICATION DESIGN
+========================================================= */
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+body {
+  min-height: 100vh;
+  width: 100%;
+
+  margin: 0;
+  padding: 30px;
+
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow-y: auto;
+
+  background:
+    radial-gradient(
+      circle at 10% 10%,
+      rgba(239, 68, 68, 0.14),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 90% 90%,
+      rgba(239, 68, 68, 0.08),
+      transparent 30%
+    ),
+    var(--background);
+
+  color: var(--text);
+
+  font-family: var(--font-primary);
+}
+
+/* =========================================================
+   MAIN AUTH CARD
+========================================================= */
+
+.login-container {
+  position: relative;
+
+  width: 850px;
+  max-width: 100%;
+
+  min-height: 560px;
+
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+
+  overflow: hidden;
+
+  padding: 0;
+
+  background: var(--card);
+
+  border: 1px solid var(--border);
+
+  border-radius: 22px;
+
+  text-align: left;
+
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+
+  animation: authEnter 0.55s ease;
+}
+
+/* =========================================================
+   LEFT BRANDING AREA
+========================================================= */
+
+.login-container::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 38%;
+
+  height: 100%;
+
+  background: linear-gradient(
+    145deg,
+    rgba(239, 68, 68, 0.18),
+    rgba(239, 68, 68, 0.03) 55%,
+    transparent
+  );
+
+  border-right: 1px solid var(--border);
+
+  pointer-events: none;
+}
+
+/* =========================================================
+   BRANDING CONTENT
+========================================================= */
+
+.login-container h2 {
+  position: absolute;
+
+  z-index: 3;
+
+  left: 45px;
+  top: 55px;
+
+  width: 250px;
+
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 31px;
+
+  font-weight: 700;
+
+  letter-spacing: -1px;
+}
+
+/* =========================================================
+   SUBTITLE / BRAND DESCRIPTION
+========================================================= */
+
+.login-container > span {
+  position: absolute;
+
+  z-index: 3;
+
+  left: 45px;
+  top: 105px;
+
+  width: 230px;
+
+  color: var(--text-secondary);
+
+  font-size: 12px;
+
+  line-height: 1.7;
+}
+
+/* =========================================================
+   BRAND DECORATION
+========================================================= */
+
+.login-container::after {
+  content: "SIMS";
+
+  position: absolute;
+
+  z-index: 1;
+
+  left: 42px;
+  bottom: 40px;
+
+  color: rgba(255, 255, 255, 0.025);
+
+  font-size: 90px;
+
+  font-weight: 900;
+
+  letter-spacing: -8px;
+
+  pointer-events: none;
+}
+
+/* =========================================================
+   FORM AREA
+========================================================= */
+
+.login-container form {
+  position: relative;
+
+  grid-column: 2;
+
+  width: auto;
+
+  margin: 0;
+
+  padding: 55px 50px 40px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 12px;
+
+  background: rgba(11, 15, 20, 0.28);
+}
+
+/* =========================================================
+   FORM TOP ACCENT
+========================================================= */
+
+.login-container form::before {
+  content: "CREATE YOUR ACCOUNT";
+
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: var(--primary-light);
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  letter-spacing: 1.8px;
+}
+
+/* =========================================================
+   INPUTS
+========================================================= */
+
+.login-container form > input {
+  width: 100%;
+  height: 44px;
+
+  padding: 0 14px;
+
+  box-sizing: border-box;
+
+  background: var(--background-secondary);
+
+  border: 1px solid var(--border);
+
+  border-radius: 8px;
+
+  outline: none;
+
+  color: var(--text);
+
+  font-family: var(--font-primary);
+
+  font-size: 12px;
+
+  transition:
+    border-color var(--transition),
+    background var(--transition),
+    box-shadow var(--transition),
+    transform var(--transition);
+}
+
+/* =========================================================
+   INPUT PLACEHOLDER
+========================================================= */
+
+.login-container form > input::placeholder {
+  color: var(--text-light);
+}
+
+/* =========================================================
+   INPUT HOVER
+========================================================= */
+
+.login-container form > input:hover {
+  border-color: #374151;
+}
+
+/* =========================================================
+   INPUT FOCUS
+========================================================= */
+
+.login-container form > input:focus {
+  background: #151b23;
+
+  border-color: var(--primary);
+
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+}
+
+/* =========================================================
+   PASSWORD REQUIREMENTS
+========================================================= */
+
+.password_req {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  padding: 11px 13px;
+
+  margin: -2px 0 2px;
+
+  background: #0d1218;
+
+  border: 1px solid var(--border);
+
+  border-radius: 8px;
+
+  text-align: left;
+
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  column-gap: 15px;
+}
+
+/* =========================================================
+   REQUIREMENT ITEMS
+========================================================= */
+
+.password_req span {
+  position: relative;
+
+  display: block;
+
+  padding-left: 17px;
+
+  margin: 3px 0;
+
+  color: var(--text-light) !important;
+
+  font-size: 10px;
+
+  line-height: 1.5;
+}
+
+/* =========================================================
+   REQUIREMENT CROSS
+========================================================= */
+
+.password_req span::before {
+  content: "×";
+
+  position: absolute;
+
+  left: 0;
+
+  color: var(--danger);
+
+  font-weight: 700;
+}
+
+/* =========================================================
+   REQUIREMENT SUCCESS
+========================================================= */
+
+.password_req span[style*="green"] {
+  color: var(--success) !important;
+}
+
+.password_req span[style*="green"]::before {
+  content: "✓";
+
+  color: var(--success);
+}
+
+/* =========================================================
+   CHECKBOX
+========================================================= */
+
+.login-container form .checkbox {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 4px 0;
+
+  color: var(--text-secondary);
+
+  font-size: 10px;
+}
+
+/* =========================================================
+   CHECKBOX INPUT
+========================================================= */
+
+.login-container form .checkbox input {
+  width: 15px;
+  height: 15px;
+
+  margin: 0;
+
+  accent-color: var(--primary);
+
+  cursor: pointer;
+}
+
+/* =========================================================
+   CHECKBOX LABEL
+========================================================= */
+
+.login-container form .checkbox label {
+  cursor: pointer;
+}
+
+/* =========================================================
+   SUBMIT BUTTON
+========================================================= */
+
+.login-container form button {
+  width: 100%;
+
+  height: 45px;
+
+  margin-top: 4px;
+
+  border: none;
+
+  border-radius: 8px;
+
+  background: var(--primary);
+
+  color: #ffffff;
+
+  font-family: var(--font-primary);
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  letter-spacing: 1px;
+
+  text-transform: uppercase;
+
+  cursor: pointer;
+
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.16);
+
+  transition:
+    background var(--transition),
+    transform var(--transition),
+    box-shadow var(--transition);
+}
+
+/* =========================================================
+   BUTTON HOVER
+========================================================= */
+
+.login-container form button:hover {
+  background: var(--primary-hover);
+
+  transform: translateY(-2px);
+
+  box-shadow: 0 12px 25px rgba(239, 68, 68, 0.25);
+}
+
+/* =========================================================
+   BUTTON ACTIVE
+========================================================= */
+
+.login-container form button:active {
+  transform: translateY(0);
+}
+
+/* =========================================================
+   ERROR MESSAGE
+========================================================= */
+
+.login-container #errorMessage {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  margin: 2px 0;
+
+  padding: 8px 10px;
+
+  border-radius: 7px;
+
+  background: rgba(239, 68, 68, 0.07);
+
+  border: 1px solid rgba(239, 68, 68, 0.15);
+
+  color: var(--danger);
+
+  font-size: 10px;
+
+  line-height: 1.4;
+}
+
+/* =========================================================
+   LOGIN FOOTER
+========================================================= */
+
+.login-container form p:last-child {
+  margin: 2px 0 0;
+
+  padding: 5px 0 0;
+
+  text-align: center;
+
+  color: var(--text-light);
+
+  font-size: 10px;
+}
+
+/* =========================================================
+   LOGIN LINK
+========================================================= */
+
+.login-container form p:last-child a {
+  color: var(--primary-light);
+
+  font-weight: 600;
+
+  text-decoration: none;
+
+  transition: color var(--transition);
+}
+
+.login-container form p:last-child a:hover {
+  color: #ffffff;
+
+  text-decoration: underline;
+}
+
+/* =========================================================
+   ANIMATION
+========================================================= */
+
+@keyframes authEnter {
+  from {
+    opacity: 0;
+
+    transform: translateY(20px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 750px) {
+  body {
+    padding: 20px;
+
+    align-items: flex-start;
+
+    padding-top: 35px;
+  }
+
+  .login-container {
+    width: 480px;
+
+    display: block;
+
+    min-height: auto;
+
+    border-radius: 18px;
+  }
+
+  .login-container::before {
+    display: none;
+  }
+
+  .login-container::after {
+    display: none;
+  }
+
+  .login-container h2 {
+    position: static;
+
+    width: auto;
+
+    padding: 30px 30px 0;
+
+    font-size: 27px;
+  }
+
+  .login-container > span {
+    position: static;
+
+    width: auto;
+
+    display: block;
+
+    padding: 0 30px;
+
+    margin-top: 5px;
+  }
+
+  .login-container form {
+    padding: 25px 30px 30px;
+  }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 500px) {
+  body {
+    padding: 15px;
+
+    padding-top: 25px;
+  }
+
+  .login-container {
+    width: 100%;
+  }
+
+  .login-container h2 {
+    padding: 25px 22px 0;
+
+    font-size: 24px;
+  }
+
+  .login-container > span {
+    padding: 0 22px;
+
+    font-size: 11px;
+  }
+
+  .login-container form {
+    padding: 22px 22px 25px;
+  }
+
+  .password_req {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   VERY SMALL SCREENS
+========================================================= */
+
+@media (max-width: 350px) {
+  body {
+    padding: 10px;
+  }
+
+  .login-container h2 {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .login-container > span {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .login-container form {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}
