@@ -3,5 +3,5 @@ Werkzeug
 mysql-connector-python
 python-dotenv
 Pillow
-psycopg[binary]
+psycopg2-binary
 gunicorn
