@@ -1,6 +1,4 @@
 Flask
-werkzueg
-mysql.connector
-
-
-# pip install -r requiments.txt
+Werkzeug
+mysql-connector-python
+python-dotenv
